@@ -1,0 +1,6 @@
+<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="CarrierGuard mark">
+  <rect x="0" y="0" width="46" height="46" rx="4" fill="#1C1917"></rect>
+  <rect x="54" y="0" width="46" height="46" rx="4" fill="#4D7C5F"></rect>
+  <rect x="0" y="54" width="46" height="46" rx="4" fill="#4D7C5F"></rect>
+  <rect x="54" y="54" width="46" height="46" rx="4" fill="#1C1917"></rect>
+</svg>

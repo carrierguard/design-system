@@ -1,0 +1,74 @@
+/* CarrierGuard — base element defaults + type-role utility classes.
+   Lightweight: sets the page surface, the sans stack, and reusable text roles
+   that mirror the brand type scale. */
+
+html, body {
+  background: var(--surface-page);
+  color: var(--text-strong);
+  font-family: var(--font-sans);
+  font-weight: var(--weight-regular);
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+}
+
+/* Type roles ---------------------------------------------------------- */
+.cg-eyebrow {
+  font-size: var(--type-eyebrow);
+  font-weight: var(--weight-medium);
+  text-transform: uppercase;
+  letter-spacing: var(--tracking-label);
+  color: var(--text-accent);
+  line-height: 1;
+}
+.cg-section-label {
+  font-size: var(--type-section);
+  font-weight: var(--weight-medium);
+  text-transform: uppercase;
+  letter-spacing: var(--tracking-label);
+  color: var(--text-accent);
+  line-height: 1;
+}
+.cg-display {
+  font-size: var(--type-display);
+  font-weight: var(--weight-medium);
+  letter-spacing: var(--tracking-tight);
+  line-height: var(--leading-tight);
+  color: var(--text-strong);
+}
+.cg-title {
+  font-size: var(--type-title);
+  font-weight: var(--weight-medium);
+  letter-spacing: var(--tracking-tight);
+  line-height: var(--leading-snug);
+  color: var(--text-strong);
+}
+.cg-headline {
+  font-size: var(--type-headline);
+  font-weight: var(--weight-medium);
+  line-height: var(--leading-snug);
+  color: var(--text-strong);
+}
+.cg-subline {
+  font-size: var(--type-subline);
+  font-weight: var(--weight-regular);
+  line-height: var(--leading-body);
+  color: var(--text-body);
+}
+.cg-body {
+  font-size: var(--type-body);
+  font-weight: var(--weight-regular);
+  line-height: var(--leading-body);
+  color: var(--text-body);
+}
+.cg-body-sm {
+  font-size: var(--type-body-sm);
+  font-weight: var(--weight-regular);
+  line-height: var(--leading-body);
+  color: var(--text-body);
+}
+.cg-footnote {
+  font-size: var(--type-footnote);
+  font-weight: var(--weight-regular);
+  color: var(--text-subtle);
+  line-height: 1.4;
+}

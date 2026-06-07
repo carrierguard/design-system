@@ -1,0 +1,10 @@
+/* CarrierGuard — Webfont: DM Sans (variable, latin subset, self-hosted).
+   Only weights 300–500 are used by the system. */
+@font-face {
+  font-family: "DM Sans";
+  font-style: normal;
+  font-weight: 300 500;
+  font-display: swap;
+  src: url("./DMSans-Variable.woff2") format("woff2-variations"),
+       url("./DMSans-Variable.woff2") format("woff2");
+}

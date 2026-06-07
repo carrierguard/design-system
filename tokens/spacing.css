@@ -1,0 +1,10 @@
+/* CarrierGuard — Spacing scale
+   A small, disciplined scale keeps the product precise and calm. */
+:root {
+  --space-xs:  4px;   /* icon gaps, tight label spacing */
+  --space-s:   8px;   /* inline gaps, label-to-value spacing */
+  --space-m:   16px;  /* card internal padding, list gaps */
+  --space-l:   24px;  /* section padding, larger card padding */
+  --space-xl:  40px;  /* between major sections */
+  --space-2xl: 72px;  /* hero padding and page top margin */
+}

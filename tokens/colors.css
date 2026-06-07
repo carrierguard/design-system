@@ -1,0 +1,38 @@
+/* CarrierGuard — Colour tokens
+   Warmth and contrast first; sage is a controlled accent, never a full-page wash. */
+:root {
+  /* Base palette */
+  --cg-background: #FDFCF9;   /* warm off-white — default surface */
+  --cg-primary:    #1C1917;   /* near-black — headlines, body, dark cards */
+  --cg-dark:       #44403C;   /* warm dark — secondary dark surfaces */
+  --cg-sage:       #4D7C5F;   /* accent sage — eyebrows, labels, focus */
+  --cg-sage-light: #D1E8D8;   /* light sage — subtle fills, soft highlights */
+  --cg-border:     #E7E5E4;   /* dividers and card borders */
+  --cg-muted:      #78716C;   /* body copy, subtitles */
+  --cg-very-muted: #A8A29E;   /* footnotes, secondary labels */
+  --cg-white:      #FFFFFF;
+
+  /* Derived status tones — the source palette has no warning colour and bans
+     alarmist red, so these are harmonised warm ambers (oklch) for "needs
+     review" states. Sage covers positive; these cover caution only. */
+  --cg-caution:       oklch(0.50 0.085 68);   /* warm amber-brown text */
+  --cg-caution-light: oklch(0.93 0.035 78);   /* soft sand fill */
+
+  /* Semantic aliases */
+  --surface-page:     var(--cg-background);
+  --surface-card:     var(--cg-white);
+  --surface-inverse:  var(--cg-primary);
+  --surface-sage:     var(--cg-sage-light);
+
+  --text-strong:   var(--cg-primary);
+  --text-body:     var(--cg-muted);
+  --text-subtle:   var(--cg-very-muted);
+  --text-accent:   var(--cg-sage);
+  --text-inverse:  var(--cg-background);
+
+  --border-default: var(--cg-border);
+  --border-strong:  var(--cg-primary);
+  --border-accent:  var(--cg-sage);
+
+  --focus-ring: var(--cg-sage);
+}

@@ -1,0 +1,32 @@
+/* CarrierGuard — Typography tokens
+   Font: DM Sans. Weights 300 / 400 / 500 only. Never 600 or 700 — too heavy.
+   Keep hierarchy light; avoid heavy all-bold interfaces. */
+:root {
+  --font-sans: "DM Sans", system-ui, -apple-system, "Segoe UI", Helvetica, Arial, sans-serif;
+
+  /* Weights — the only three permitted */
+  --weight-light:   300;
+  --weight-regular: 400;
+  --weight-medium:  500;
+
+  /* Tracking */
+  --tracking-label: 0.1em;    /* eyebrows + section labels */
+  --tracking-tight: -0.02em;  /* display / hero */
+  --tracking-normal: 0;
+
+  /* Line heights */
+  --leading-tight: 1.15;
+  --leading-snug:  1.3;
+  --leading-body:  1.6;
+
+  /* Role sizes (product / document scale) */
+  --type-eyebrow:    11px;  /* 500, uppercase, 0.1em, sage */
+  --type-section:    11px;  /* 500, uppercase, 0.1em, sage */
+  --type-footnote:   11px;  /* 400, very-muted */
+  --type-body-sm:    12px;  /* 400, muted */
+  --type-body:       13px;  /* 400, muted */
+  --type-subline:    13px;  /* 400, muted */
+  --type-headline:   22px;  /* 500, primary */
+  --type-title:      28px;  /* 500, primary — page headline */
+  --type-display:    32px;  /* 500, primary, -0.02em — hero */
+}

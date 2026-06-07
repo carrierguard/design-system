@@ -1,0 +1,65 @@
+/* CarrierGuard investor deck — slide layout + entrance animation.
+   Builds on the design-system tokens (styles.css). Slides are a 1280x720
+   canvas; deck-stage scales the canvas to fit and tags the active slide
+   with [data-deck-active]. */
+
+/* keep the deck-stage shell on brand black letterbox */
+deck-stage:not(:defined) { visibility: hidden; }
+deck-stage { background: #0e0d0c; }
+
+/* slide root */
+.cg-slide {
+  width: 1280px; height: 720px;
+  position: relative; overflow: hidden;
+  background: var(--cg-background);
+  color: var(--cg-primary);
+  font-family: var(--font-sans);
+  font-weight: var(--weight-regular);
+  -webkit-font-smoothing: antialiased;
+}
+.cg-slide * { box-sizing: border-box; }
+.cg-slide--dark { background: var(--cg-primary); color: var(--cg-background); }
+
+/* padded content area + footer chrome */
+.cg-pad { position: absolute; inset: 0; padding: 64px 80px 0; display: flex; flex-direction: column; }
+.cg-foot {
+  position: absolute; left: 80px; right: 80px; bottom: 34px;
+  display: flex; align-items: center; justify-content: space-between;
+  font-size: 11px; letter-spacing: 0.06em; text-transform: uppercase;
+  color: var(--cg-very-muted);
+}
+.cg-slide--dark .cg-foot { color: rgba(253,252,249,0.45); }
+
+/* team photo slots: a soft, on-brand circular placeholder even before a photo is dropped */
+image-slot { background: var(--cg-sage-light); color: var(--cg-sage); border-radius: 50%; overflow: hidden; }
+
+/* eyebrow row */
+.cg-eb { display: inline-flex; align-items: center; gap: 12px; }
+.cg-eb__rule { height: 1px; width: 38px; background: var(--cg-sage); display: inline-block; }
+.cg-eb__txt { font-size: 12px; font-weight: 500; text-transform: uppercase; letter-spacing: 0.12em; color: var(--cg-sage); white-space: nowrap; }
+.cg-slide--dark .cg-eb__txt { color: var(--cg-sage-light); }
+.cg-slide--dark .cg-eb__rule { background: var(--cg-sage-light); }
+
+/* four-square background motif */
+.cg-bgmark { position: absolute; pointer-events: none; opacity: 0.045; }
+.cg-slide--dark .cg-bgmark { opacity: 0.07; }
+
+/* big editorial figure */
+.cg-fig { font-weight: 500; letter-spacing: -0.03em; line-height: 0.92; font-variant-numeric: tabular-nums; }
+
+/* hairline divider */
+.cg-rule { height: 1px; background: var(--cg-border); border: 0; }
+
+/* generic surface card */
+.cg-card {
+  background: var(--cg-white); border: 1px solid var(--cg-border);
+  border-radius: var(--radius-lg); box-shadow: var(--shadow-xs);
+}
+
+/* ---- entrance animation ----
+   Content is VISIBLE by default (print-safe + robust). The active slide's
+   .cg-anim elements are gently faded/risen in via the Web Animations API on
+   the deck's slidechange event (see the deck HTML). CSS animations declared
+   on slotted content under <deck-stage> never get a start time, so we drive
+   it from JS instead. Reduced-motion simply skips it. */
+.cg-anim { will-change: opacity, transform; }
