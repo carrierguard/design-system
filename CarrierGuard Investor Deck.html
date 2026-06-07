@@ -19,51 +19,1039 @@
   <script src="https://unpkg.com/@babel/standalone@7.29.0/babel.min.js" integrity="sha384-m08KidiNqLdpJqLq95G/LEi8Qvjl/xUYll3QILypMoQ65QorJ9Lvtp2RXYGBFj1y" crossorigin="anonymous"></script>
   <script src="image-slot.js"></script>
 
-  <script type="text/babel" src="deck/kit.jsx"></script>
-  <script type="text/babel" src="deck/slides-title.jsx"></script>
-  <script type="text/babel" src="deck/slides-a.jsx"></script>
-  <script type="text/babel" src="deck/slides-b.jsx"></script>
-  <script type="text/babel" src="deck/slides-c.jsx"></script>
-
+  <!-- All JSX inlined into one block so Babel transpiles everything before render runs -->
   <script type="text/babel" data-presets="env,react">
-    const slides = [
-      window.CGS0,
-      window.CGS1, window.CGS2, window.CGS3, window.CGS4, window.CGS5, window.CGS6, window.CGS7,
-      window.CGS8, window.CGS9, window.CGS10, window.CGS11, window.CGS12, window.CGS13,
-    ];
-    const deck = document.getElementById("deck");
-    slides.forEach((S) => {
-      const sec = document.createElement("section");
-      const mount = document.createElement("div");
-      sec.appendChild(mount);
-      deck.appendChild(sec);
-      ReactDOM.createRoot(mount).render(React.createElement(S));
+
+/* ============================================================ KIT */
+const { useState } = React;
+
+function Mark({ size = 28, theme = "light", style, className }) {
+  const p = theme === "dark"
+    ? { dark: "#FDFCF9", sage: "#D1E8D8" }
+    : { dark: "#1C1917", sage: "#4D7C5F" };
+  return (
+    <svg width={size} height={size} viewBox="0 0 100 100" role="img" aria-label="CarrierGuard" className={className}
+      style={{ display: "block", flexShrink: 0, ...style }}>
+      <rect x="0" y="0" width="46" height="46" rx="4" fill={p.dark} />
+      <rect x="54" y="0" width="46" height="46" rx="4" fill={p.sage} />
+      <rect x="0" y="54" width="46" height="46" rx="4" fill={p.sage} />
+      <rect x="54" y="54" width="46" height="46" rx="4" fill={p.dark} />
+    </svg>
+  );
+}
+
+function Wordmark({ size = 22, theme = "light" }) {
+  const color = theme === "dark" ? "#FDFCF9" : "#1C1917";
+  return (
+    <span style={{ display: "inline-flex", alignItems: "center", gap: size * 0.42 }}>
+      <Mark size={size} theme={theme} />
+      <span style={{ fontSize: size * 0.82, color, letterSpacing: "-0.01em", lineHeight: 1, whiteSpace: "nowrap" }}>
+        <span style={{ fontWeight: 400 }}>Carrier</span><span style={{ fontWeight: 500 }}>Guard</span>
+      </span>
+    </span>
+  );
+}
+
+function Eyebrow({ children, theme = "light", className = "" }) {
+  return (
+    <span className={"cg-eb " + className}>
+      <span className="cg-eb__rule" />
+      <span className="cg-eb__txt">{children}</span>
+    </span>
+  );
+}
+
+function Foot({ theme = "light", page, label }) {
+  return (
+    <div className="cg-foot">
+      <Wordmark size={16} theme={theme} />
+      <span style={{ whiteSpace: "nowrap" }}>{label}</span>
+      <span style={{ fontVariantNumeric: "tabular-nums", whiteSpace: "nowrap" }}>{page}</span>
+    </div>
+  );
+}
+
+function Tag({ tone = "neutral", dot = true, children, style }) {
+  const tones = {
+    verified: { bg: "var(--cg-sage-light)", color: "var(--cg-sage)", d: "var(--cg-sage)" },
+    review:   { bg: "var(--cg-caution-light)", color: "var(--cg-caution)", d: "var(--cg-caution)" },
+    neutral:  { bg: "var(--cg-white)", color: "var(--cg-muted)", d: "var(--cg-very-muted)", border: "var(--cg-border)" },
+    inverse:  { bg: "var(--cg-primary)", color: "var(--cg-background)", d: "var(--cg-sage-light)" },
+  };
+  const t = tones[tone] || tones.neutral;
+  return (
+    <span style={{ display: "inline-flex", alignItems: "center", gap: 6, fontFamily: "var(--font-sans)",
+      fontSize: 11, fontWeight: 500, letterSpacing: "0.04em", textTransform: "uppercase", lineHeight: 1,
+      padding: "6px 10px", borderRadius: "var(--radius-pill)", background: t.bg, color: t.color,
+      border: t.border ? `1px solid ${t.border}` : "1px solid transparent", whiteSpace: "nowrap", ...style }}>
+      {dot && <span style={{ width: 6, height: 6, borderRadius: "50%", background: t.d, flexShrink: 0 }} />}
+      {children}
+    </span>
+  );
+}
+
+function Icon({ d, size = 20, fill = "none", style }) {
+  return (
+    <svg width={size} height={size} viewBox="0 0 24 24" fill={fill} stroke="currentColor"
+      strokeWidth="1.75" strokeLinecap="round" strokeLinejoin="round" style={{ display: "block", ...style }}>
+      {d}
+    </svg>
+  );
+}
+
+const Ic = {
+  factory: <><path d="M2 20h20"/><path d="M4 20V9l5 3V9l5 3V9l5 3v8"/><path d="M9 20v-4h4v4"/></>,
+  globe: <><circle cx="12" cy="12" r="9"/><path d="M3 12h18"/><path d="M12 3a14 14 0 0 1 0 18a14 14 0 0 1 0-18z"/></>,
+  truck: <><path d="M10 17h4V6H2v11h2"/><path d="M14 9h4l3 3v5h-3"/><circle cx="7" cy="18" r="2"/><circle cx="17" cy="18" r="2"/></>,
+  store: <><path d="M3 9l1.5-5h15L21 9"/><path d="M4 9v11h16V9"/><path d="M4 9a2.5 2.5 0 0 0 5 0 2.5 2.5 0 0 0 5 0 2.5 2.5 0 0 0 5 0"/><path d="M9 20v-6h6v6"/></>,
+  alert: <><path d="M10.3 3.3a2 2 0 0 1 3.4 0l8 14A2 2 0 0 1 20 20.3H4a2 2 0 0 1-1.7-3l8-14z"/><path d="M12 9v4"/><path d="M12 17h.01"/></>,
+  arrowR: <><path d="M5 12h14M13 6l6 6-6 6"/></>,
+  arrowDown: <><path d="M12 5v14M6 13l6 6 6-6"/></>,
+  check: <><path d="M20 6L9 17l-5-5"/></>,
+  shield: <><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></>,
+  shieldChk: <><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/><path d="M9 12l2 2 4-4"/></>,
+  users: <><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></>,
+  cycle: <><path d="M21 2v6h-6"/><path d="M3 12a9 9 0 0 1 15-6.7L21 8"/><path d="M3 22v-6h6"/><path d="M21 12a9 9 0 0 1-15 6.7L3 16"/></>,
+  layers: <><path d="M12 2l9 5-9 5-9-5 9-5z"/><path d="M3 12l9 5 9-5"/><path d="M3 17l9 5 9-5"/></>,
+  trend: <><path d="M22 7l-8.5 8.5-5-5L2 17"/><path d="M16 7h6v6"/></>,
+  target: <><circle cx="12" cy="12" r="9"/><circle cx="12" cy="12" r="5"/><circle cx="12" cy="12" r="1.4" fill="currentColor"/></>,
+  phone: <><path d="M22 16.9v3a2 2 0 0 1-2.2 2 19.8 19.8 0 0 1-8.6-3 19.5 19.5 0 0 1-6-6 19.8 19.8 0 0 1-3-8.6A2 2 0 0 1 4.1 2h3a2 2 0 0 1 2 1.7c.1.9.3 1.8.6 2.6a2 2 0 0 1-.5 2.1L8 9.6a16 16 0 0 0 6 6l1.2-1.2a2 2 0 0 1 2.1-.5c.8.3 1.7.5 2.6.6a2 2 0 0 1 1.7 2z"/></>,
+  mail: <><rect x="2" y="4" width="20" height="16" rx="2"/><path d="M22 7l-10 6L2 7"/></>,
+  link: <><path d="M10 13a5 5 0 0 0 7 0l3-3a5 5 0 0 0-7-7l-1 1"/><path d="M14 11a5 5 0 0 0-7 0l-3 3a5 5 0 0 0 7 7l1-1"/></>,
+  scale: <><path d="M12 3v18"/><path d="M7 7h10"/><path d="M5 21h14"/><path d="M7 7l-3 6a3 3 0 0 0 6 0L7 7z"/><path d="M17 7l-3 6a3 3 0 0 0 6 0l-3-6z"/></>,
+  cpu: <><rect x="6" y="6" width="12" height="12" rx="2"/><path d="M9 2v2M15 2v2M9 20v2M15 20v2M2 9h2M2 15h2M20 9h2M20 15h2"/><rect x="9" y="9" width="6" height="6" rx="1"/></>,
+  fileChk: <><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6"/><path d="M9 15l2 2 4-4"/></>,
+  wrench: <><path d="M14.7 6.3a4 4 0 0 0-5.4 5.2L3 17.8 6.2 21l6.3-6.3a4 4 0 0 0 5.2-5.4l-2.6 2.6-2.7-.4-.4-2.7 2.7-2.5z"/></>,
+  userPlus: <><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M19 8v6M22 11h-6"/></>,
+  banknote: <><rect x="2" y="6" width="20" height="12" rx="2"/><circle cx="12" cy="12" r="2.5"/><path d="M6 12h.01M18 12h.01"/></>,
+  building: <><rect x="4" y="2" width="16" height="20" rx="1.5"/><path d="M9 22v-4h6v4"/><path d="M8 6h.01M12 6h.01M16 6h.01M8 10h.01M12 10h.01M16 10h.01M8 14h.01M12 14h.01M16 14h.01"/></>,
+  seed: <><path d="M12 22V12"/><path d="M12 12C12 8 9 6 4 6c0 5 3 7 8 6z"/><path d="M12 14c0-4 3-6 8-6 0 5-3 7-8 6z"/></>,
+  coins: <><circle cx="8" cy="8" r="5"/><path d="M16.7 4.3a5 5 0 0 1 0 9.4"/><path d="M19 18.7a5 5 0 0 1-7 0"/><path d="M3 13v3c0 1.7 2.2 3 5 3s5-1.3 5-3v-3"/></>,
+  spark: <><path d="M12 3l1.8 5.2L19 10l-5.2 1.8L12 17l-1.8-5.2L5 10l5.2-1.8L12 3z"/></>,
+  flag: <><path d="M4 22V4s2-1 5-1 4 2 7 2 4-1 4-1v10s-2 1-4 1-4-2-7-2-5 1-5 1"/></>,
+  hand: <><path d="M11 14V5.5a1.5 1.5 0 0 1 3 0V12"/><path d="M14 11.5a1.5 1.5 0 0 1 3 0V13"/><path d="M17 12.5a1.5 1.5 0 0 1 3 0V16a6 6 0 0 1-6 6h-2a7 7 0 0 1-5-2l-3.3-3.4a1.5 1.5 0 0 1 2.1-2.1L8 14V6.5a1.5 1.5 0 0 1 3 0V12"/></>,
+  list: <><path d="M8 6h13M8 12h13M8 18h13"/><path d="M3.5 6h.01M3.5 12h.01M3.5 18h.01"/></>,
+  clipboard: <><rect x="8" y="3" width="8" height="4" rx="1"/><path d="M16 5h2a2 2 0 0 1 2 2v12a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V7a2 2 0 0 1 2-2h2"/><path d="M9 12h6M9 16h4"/></>,
+  hourglass: <><path d="M6 3h12M6 21h12"/><path d="M7 3c0 4 5 5 5 9s-5 5-5 9"/><path d="M17 3c0 4-5 5-5 9s5 5 5 9"/></>,
+};
+
+function NodeIcon({ d, tone = "ink", size = 22 }) {
+  const map = {
+    ink: { c: "var(--cg-primary)" },
+    sage: { c: "var(--cg-sage)" },
+    caution: { c: "var(--cg-caution)" },
+    light: { c: "var(--cg-background)" },
+  };
+  return <span style={{ color: map[tone].c, display: "inline-flex" }}><Icon d={d} size={size} /></span>;
+}
+
+/* ============================================================ SLIDE 00 TITLE */
+function SlideTitle() {
+  return (
+    <div className="cg-slide cg-slide--dark">
+      <Mark className="cg-bgmark" size={660} theme="dark" style={{ right: -190, bottom: -210 }} />
+      <div className="cg-pad" style={{ paddingBottom: 56 }}>
+        <div className="cg-anim cg-anim-1" style={{ display: "flex", alignItems: "center" }}>
+          <Wordmark size={24} theme="dark" />
+        </div>
+        <div style={{ flex: 1, display: "flex", flexDirection: "column", justifyContent: "center", maxWidth: 1000 }}>
+          <Eyebrow className="cg-anim cg-anim-2">Investor brief</Eyebrow>
+          <h1 className="cg-anim cg-anim-3" style={{ margin: "26px 0 0", fontSize: 62, fontWeight: 500, letterSpacing: "-0.03em", lineHeight: 1.05, color: "var(--cg-background)", textWrap: "balance" }}>
+            The trust infrastructure logistics has never had
+          </h1>
+          <p className="cg-anim cg-anim-4" style={{ margin: "26px 0 0", maxWidth: 700, fontSize: 19, lineHeight: 1.6, color: "rgba(253,252,249,0.72)" }}>
+            CarrierGuard verifies carriers before a load is ever assigned, turning fragmented signals into a clear, traceable risk view in seconds.
+          </p>
+        </div>
+        <div className="cg-anim cg-anim-5" style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-end", fontSize: 13, color: "rgba(253,252,249,0.5)" }}>
+          <span style={{ letterSpacing: "0.04em" }}>carrierguard.eu</span>
+          <span style={{ letterSpacing: "0.08em", textTransform: "uppercase", whiteSpace: "nowrap" }}>Carrier fraud prevention for freight</span>
+          <span style={{ fontVariantNumeric: "tabular-nums", letterSpacing: "0.06em", whiteSpace: "nowrap" }}>01</span>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+/* ============================================================ SLIDE 01 MARKET */
+function FlowNode({ icon, name, sub, tone = "neutral", badge }) {
+  const isRisk = tone === "risk";
+  return (
+    <div style={{ position: "relative", flex: "0 0 180px" }}>
+      {badge && (
+        <div style={{ position: "absolute", top: -34, left: "50%", transform: "translateX(-50%)" }}>
+          <Tag tone="review">{badge}</Tag>
+        </div>
+      )}
+      <div style={{
+        background: isRisk ? "var(--cg-caution-light)" : "var(--cg-white)",
+        border: isRisk ? "1.5px solid var(--cg-caution)" : (tone === "sage" ? "1.5px solid var(--cg-sage)" : "1px solid var(--cg-border)"),
+        borderRadius: "var(--radius-lg)", padding: "22px 20px", boxShadow: "var(--shadow-xs)", textAlign: "center",
+      }}>
+        <span style={{ color: isRisk ? "var(--cg-caution)" : (tone === "sage" ? "var(--cg-sage)" : "var(--cg-primary)"), display: "inline-flex" }}>
+          <Icon d={icon} size={26} />
+        </span>
+        <div style={{ fontSize: 16, fontWeight: 500, marginTop: 12, color: "var(--cg-primary)" }}>{name}</div>
+        <div style={{ fontSize: 12, color: "var(--cg-muted)", marginTop: 5, lineHeight: 1.45 }}>{sub}</div>
+      </div>
+      {isRisk && (
+        <div style={{ display: "flex", justifyContent: "center", gap: 10, marginTop: 12, color: "var(--cg-caution)" }}>
+          <Icon d={Ic.alert} size={18} /><Icon d={Ic.alert} size={18} /><Icon d={Ic.alert} size={18} />
+        </div>
+      )}
+    </div>
+  );
+}
+function FlowArrow({ label }) {
+  return (
+    <div style={{ flex: 1, display: "flex", flexDirection: "column", alignItems: "center", gap: 7, marginTop: -16, minWidth: 56 }}>
+      <span style={{ fontSize: 10.5, textTransform: "uppercase", letterSpacing: "0.12em", color: "var(--cg-very-muted)" }}>{label}</span>
+      <div style={{ display: "flex", alignItems: "center", width: "100%", color: "var(--cg-border)" }}>
+        <div style={{ flex: 1, height: 1.5, background: "var(--cg-border)" }} />
+        <Icon d={Ic.arrowR} size={18} style={{ color: "var(--cg-very-muted)", marginLeft: -2 }} />
+      </div>
+    </div>
+  );
+}
+function Slide01() {
+  return (
+    <div className="cg-slide">
+      <div className="cg-pad">
+        <Eyebrow className="cg-anim cg-anim-1">Market</Eyebrow>
+        <h1 className="cg-anim cg-anim-2" style={{ margin: "22px 0 0", fontSize: 31, fontWeight: 500, letterSpacing: "-0.02em", lineHeight: 1.25, maxWidth: 1140 }}>
+          In the $11T global logistics market, cargo owners outsource transport to freight forwarders, who subcontract to carriers.
+        </h1>
+        <div className="cg-anim cg-anim-3" style={{ display: "flex", alignItems: "center", gap: 4, marginTop: 78, paddingTop: 8 }}>
+          <FlowNode icon={Ic.factory} name="Manufacturer" sub="Needs goods delivered" tone="neutral" />
+          <FlowArrow label="books" />
+          <FlowNode icon={Ic.globe} name="Freight forwarder" sub="Organises the shipment" tone="sage" />
+          <FlowArrow label="hires" />
+          <FlowNode icon={Ic.truck} name="Carrier" sub="Moves the goods" tone="risk" badge="Theft risk" />
+          <FlowArrow label="delivers" />
+          <FlowNode icon={Ic.store} name="Destination" sub="e.g. retail stores" tone="neutral" />
+        </div>
+        <div className="cg-anim cg-anim-4" style={{ marginTop: 30, fontSize: 13, color: "var(--cg-muted)", textAlign: "center", lineHeight: 1.5 }}>
+          70–80% of shipments go via a freight forwarder. In 20–30% of cases, manufacturers book carriers directly.
+        </div>
+        <div className="cg-anim cg-anim-5" style={{ display: "flex", alignItems: "center", gap: 16, marginTop: 30, padding: "22px 34px",
+          background: "var(--cg-caution-light)", border: "1px solid var(--cg-caution)", borderRadius: "var(--radius-lg)", maxWidth: 1140, marginLeft: "auto", marginRight: "auto" }}>
+          <span style={{ color: "var(--cg-caution)", flexShrink: 0, display: "inline-flex" }}><Icon d={Ic.alert} size={24} /></span>
+          <p style={{ margin: 0, fontSize: 16, fontWeight: 500, lineHeight: 1.5, color: "var(--cg-primary)" }}>
+            The carrier is the only actor who physically handles the client's goods, making it the primary risk for cargo fraud.
+          </p>
+        </div>
+      </div>
+      <Foot page="02" label="Market structure" />
+    </div>
+  );
+}
+
+/* ============================================================ SLIDE 02 PROBLEM */
+function StatCard({ num, label, note }) {
+  return (
+    <div style={{ flex: 1, background: "var(--cg-white)", border: "1px solid var(--cg-border)", borderRadius: "var(--radius-lg)", padding: "20px 24px", boxShadow: "var(--shadow-xs)" }}>
+      <div className="cg-fig" style={{ fontSize: 44, color: "var(--cg-primary)" }}>{num}{note && <sup style={{ fontSize: 28, color: "var(--cg-caution)", fontWeight: 500, marginLeft: 1, top: "-0.5em" }}>*</sup>}</div>
+      <div style={{ fontSize: 12.5, color: "var(--cg-muted)", marginTop: 8, lineHeight: 1.4 }}>{label}</div>
+    </div>
+  );
+}
+function Slide02() {
+  const how = ["Shell company registered overnight", "Impersonating a real carrier", "Buying aged company for legitimacy", "Hijacking a carrier's platform account"];
+  const why = [
+    ["Time pressure", "oftentimes, forwarders have minutes to decide on a carrier"],
+    ["Fragmented knowledge", "some players informally exchange intel, but no central intelligence exists"],
+    ["No secure infrastructure", "nothing like banks would use"],
+  ];
+  return (
+    <div className="cg-slide">
+      <div className="cg-pad">
+        <Eyebrow className="cg-anim cg-anim-1">Problem</Eyebrow>
+        <div className="cg-anim cg-anim-2" style={{ display: "flex", alignItems: "flex-end", justifyContent: "space-between", gap: 40, marginTop: 18 }}>
+          <div>
+            <h1 style={{ margin: 0, fontSize: 32, fontWeight: 500, letterSpacing: "-0.02em", lineHeight: 1.14, maxWidth: 1040, textWrap: "balance" }}>
+              Cargo theft is a €8.3B annual crisis in the EU, and growing
+            </h1>
+            <p style={{ margin: "12px 0 0", fontSize: 16, color: "var(--cg-muted)", lineHeight: 1.5, maxWidth: 720 }}>
+              The fastest-growing theft method is identity fraud, rather than violent robberies.
+            </p>
+          </div>
+        </div>
+        <div style={{ flex: 1, display: "flex", flexDirection: "column", justifyContent: "center", paddingTop: 10, paddingBottom: 44 }}>
+          <div className="cg-anim cg-anim-3" style={{ display: "flex", gap: 16 }}>
+            <StatCard num="€2.5M" label="stolen per day in the EU" note />
+            <StatCard num="€8.3B" label="annual EU losses" />
+            <StatCard num="~10%" label="of thefts go reported" />
+          </div>
+          <div className="cg-anim cg-anim-4" style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 40, marginTop: 34 }}>
+            <div>
+              <div style={{ fontSize: 11, fontWeight: 500, textTransform: "uppercase", letterSpacing: "0.1em", color: "var(--cg-sage)" }}>How fraud happens</div>
+              <div style={{ marginTop: 14, display: "flex", flexDirection: "column", gap: 11 }}>
+                {how.map((h, i) => (
+                  <div key={i} style={{ display: "flex", gap: 12, alignItems: "baseline", fontSize: 14.5, color: "var(--cg-primary)", lineHeight: 1.4 }}>
+                    <span style={{ width: 5, height: 5, borderRadius: "50%", background: "var(--cg-caution)", flexShrink: 0, transform: "translateY(-2px)" }} />{h}
+                  </div>
+                ))}
+              </div>
+            </div>
+            <div>
+              <div style={{ fontSize: 11, fontWeight: 500, textTransform: "uppercase", letterSpacing: "0.1em", color: "var(--cg-sage)" }}>Why it keeps working</div>
+              <div style={{ marginTop: 14, display: "flex", flexDirection: "column", gap: 10 }}>
+                {why.map(([k, v], i) => (
+                  <div key={i} style={{ fontSize: 14, color: "var(--cg-muted)", lineHeight: 1.45 }}>
+                    <span style={{ fontWeight: 500, color: "var(--cg-primary)" }}>{k}:</span> {v}
+                  </div>
+                ))}
+              </div>
+            </div>
+          </div>
+          <div className="cg-anim cg-anim-5" style={{ marginTop: 34, borderLeft: "2px solid var(--cg-sage)", paddingLeft: 22 }}>
+            <p style={{ margin: 0, fontSize: 17, fontWeight: 500, lineHeight: 1.45, color: "var(--cg-primary)", letterSpacing: "-0.01em", maxWidth: 980 }}>
+              Banks conduct extensive checks before trusting anyone with money. Forwarders hand over a load to a carrier they found 20 minutes ago.
+            </p>
+          </div>
+        </div>
+      </div>
+      <div className="cg-foot">
+        <span style={{ whiteSpace: "nowrap", textTransform: "none", letterSpacing: 0, color: "var(--cg-muted)", lineHeight: 1.45, fontSize: 11.5 }}>
+          <span style={{ color: "var(--cg-caution)", fontWeight: 500 }}>*</span> Experts believe only 10–15% of cargo thefts are ever reported. In CEE, which has the most carriers in the EU, there are almost no statistics at all.
+        </span>
+        <span style={{ fontVariantNumeric: "tabular-nums" }}>03</span>
+      </div>
+    </div>
+  );
+}
+
+/* ============================================================ SLIDE 03 SOLUTION */
+function CycleNode({ title, sub, tone }) {
+  const sage = tone === "sage";
+  return (
+    <div style={{ flex: 1, background: sage ? "var(--cg-sage-light)" : "var(--cg-white)", border: sage ? "1.5px solid var(--cg-sage)" : "1px solid var(--cg-border)",
+      borderRadius: "var(--radius-lg)", padding: "20px 22px", boxShadow: "var(--shadow-xs)" }}>
+      <div style={{ color: "var(--cg-sage)", display: "inline-flex" }}><Icon d={sage ? Ic.layers : Ic.shieldChk} size={24} /></div>
+      <div style={{ fontSize: 16, fontWeight: 500, marginTop: 12 }}>{title}</div>
+      <div style={{ fontSize: 12.5, color: "var(--cg-muted)", marginTop: 5, lineHeight: 1.45 }}>{sub}</div>
+    </div>
+  );
+}
+function Phase({ n, title, body, last, accent }) {
+  return (
+    <div style={{ flex: 1, position: "relative", paddingRight: last ? 0 : 18 }}>
+      <div style={{ fontSize: 12, fontWeight: 500, color: accent ? "var(--cg-sage)" : "var(--cg-very-muted)", letterSpacing: "0.04em" }}>{n}</div>
+      <div style={{ fontSize: 15.5, fontWeight: 500, marginTop: 7, color: "var(--cg-primary)" }}>{title}</div>
+      <div style={{ fontSize: 12.5, color: "var(--cg-muted)", marginTop: 7, lineHeight: 1.5 }}>{body}</div>
+    </div>
+  );
+}
+function Slide03() {
+  return (
+    <div className="cg-slide">
+      <div className="cg-pad">
+        <Eyebrow className="cg-anim cg-anim-1">Solution</Eyebrow>
+        <h1 className="cg-anim cg-anim-2" style={{ margin: "18px 0 0", fontSize: 33, fontWeight: 500, letterSpacing: "-0.02em", lineHeight: 1.12, maxWidth: 1040 }}>
+          CarrierGuard is the trust infrastructure logistics has never had
+        </h1>
+        <p className="cg-anim cg-anim-2" style={{ margin: "12px 0 0", fontSize: 16, color: "var(--cg-muted)", lineHeight: 1.5, maxWidth: 820 }}>
+          We formalise what freight forwarders already do informally, then layer the intelligence on top.
+        </p>
+        <div style={{ flex: 1, display: "flex", flexDirection: "column", justifyContent: "space-evenly", paddingTop: 6, paddingBottom: 26 }}>
+          <div className="cg-anim cg-anim-3">
+            <div style={{ fontSize: 11, fontWeight: 500, textTransform: "uppercase", letterSpacing: "0.1em", color: "var(--cg-sage)", textAlign: "center" }}>The shared blacklist flywheel</div>
+            <div style={{ display: "flex", alignItems: "stretch", justifyContent: "center", maxWidth: 900, margin: "20px auto 0" }}>
+              <CycleNode title="Shared blacklist" sub="forwarders contribute, everyone benefits" tone="sage" />
+              <div style={{ flex: "0 0 244px", display: "flex", flexDirection: "column", justifyContent: "center", gap: 20, padding: "0 22px" }}>
+                <div>
+                  <div style={{ display: "flex", alignItems: "center", gap: 6, color: "var(--cg-sage)" }}>
+                    <div style={{ flex: 1, height: 1.5, background: "currentColor", opacity: 0.45 }} />
+                    <Icon d={Ic.arrowR} size={15} />
+                  </div>
+                  <div style={{ fontSize: 11.5, color: "var(--cg-muted)", textAlign: "center", marginTop: 6 }}>every entry enriches detection</div>
+                </div>
+                <div>
+                  <div style={{ display: "flex", alignItems: "center", gap: 6, color: "var(--cg-sage)" }}>
+                    <Icon d={Ic.arrowR} size={15} style={{ transform: "rotate(180deg)" }} />
+                    <div style={{ flex: 1, height: 1.5, background: "currentColor", opacity: 0.45 }} />
+                  </div>
+                  <div style={{ fontSize: 11.5, color: "var(--cg-muted)", textAlign: "center", marginTop: 6 }}>smarter flags feed the list over time</div>
+                </div>
+              </div>
+              <CycleNode title="Carrier intelligence" sub="checks across 30+ registries, in seconds" tone="ink" />
+            </div>
+          </div>
+          <div className="cg-anim cg-anim-4">
+            <div style={{ fontSize: 11, fontWeight: 500, textTransform: "uppercase", letterSpacing: "0.1em", color: "var(--cg-sage)", marginBottom: 18 }}>How we get there</div>
+            <div style={{ display: "flex", gap: 28 }}>
+              <Phase n="Phase 1" title="Seed (free)" body="Forwarders share their internal blacklists in exchange for access to everyone else's. No cost, no integration. The list grows." />
+              <Phase n="Phase 2" title="Monetise" body="Once the shared list reaches critical mass, access becomes paid. Real-time carrier verification launches alongside it, also paid." />
+              <Phase n="Phase 3" title="Expand" body="The dataset matures into a full lifecycle intelligence layer: live monitoring, claims, insurer access, and carrier accreditation." accent last />
+            </div>
+            <div style={{ display: "flex", alignItems: "center", gap: 6, marginTop: 22 }}>
+              <div style={{ width: 9, height: 9, borderRadius: "50%", background: "var(--cg-very-muted)" }} />
+              <div style={{ flex: 1, height: 1.5, background: "var(--cg-border)" }} />
+              <div style={{ width: 9, height: 9, borderRadius: "50%", background: "var(--cg-sage)", opacity: 0.5 }} />
+              <div style={{ flex: 1, height: 1.5, background: "var(--cg-border)" }} />
+              <div style={{ width: 12, height: 12, borderRadius: "50%", background: "var(--cg-sage)" }} />
+            </div>
+          </div>
+        </div>
+      </div>
+      <div className="cg-foot">
+        <span style={{ textTransform: "none", letterSpacing: 0, color: "var(--cg-muted)", fontSize: 12.5 }}>More on the product in the following slides.</span>
+        <span style={{ fontVariantNumeric: "tabular-nums" }}>04</span>
+      </div>
+    </div>
+  );
+}
+
+/* ============================================================ SLIDE 04 PRODUCT */
+function SigRow({ icon, title, desc, sev, tone }) {
+  return (
+    <div style={{ display: "flex", alignItems: "flex-start", gap: 13, padding: "13px 0", borderTop: "1px solid var(--cg-border)" }}>
+      <span style={{ color: tone === "review" ? "var(--cg-caution)" : "var(--cg-sage)", marginTop: 1, display: "inline-flex" }}><Icon d={icon} size={18} /></span>
+      <div style={{ flex: 1 }}>
+        <div style={{ fontSize: 13.5, fontWeight: 500 }}>{title}</div>
+        <div style={{ fontSize: 12, color: "var(--cg-muted)", marginTop: 3, lineHeight: 1.5 }}>{desc}</div>
+      </div>
+      <Tag tone={tone}>{sev}</Tag>
+    </div>
+  );
+}
+function Callout({ children, style, className }) {
+  return (
+    <div className={className} style={{ position: "absolute", display: "inline-flex", alignItems: "center", gap: 9, background: "var(--cg-primary)", color: "var(--cg-background)",
+      fontSize: 12.5, fontWeight: 500, padding: "10px 15px", borderRadius: "var(--radius-pill)", boxShadow: "var(--shadow-md)", whiteSpace: "nowrap", ...style }}>
+      <span style={{ width: 6, height: 6, borderRadius: "50%", background: "var(--cg-sage-light)" }} />{children}
+    </div>
+  );
+}
+function Slide04() {
+  return (
+    <div className="cg-slide">
+      <div className="cg-pad" style={{ paddingBottom: 0 }}>
+        <Eyebrow className="cg-anim cg-anim-1">Product</Eyebrow>
+        <h1 className="cg-anim cg-anim-2" style={{ margin: "18px 0 0", fontSize: 34, fontWeight: 500, letterSpacing: "-0.02em" }}>
+          Carrier verification, in seconds
+        </h1>
+        <div style={{ position: "relative", flex: 1, marginTop: 14 }}>
+          <div className="cg-anim cg-anim-3" style={{ position: "absolute", left: "50%", top: 6, transform: "translateX(-50%)", width: 620,
+            background: "var(--cg-white)", border: "1px solid var(--cg-border)", borderRadius: "var(--radius-xl)", boxShadow: "var(--shadow-lg)", padding: "24px 28px" }}>
+            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start" }}>
+              <div>
+                <div style={{ fontSize: 11, fontWeight: 500, textTransform: "uppercase", letterSpacing: "0.1em", color: "var(--cg-sage)" }}>Carrier check</div>
+                <div style={{ fontSize: 21, fontWeight: 500, marginTop: 7, letterSpacing: "-0.01em" }}>Transeuro Spedycja Sp. z o.o.</div>
+                <div style={{ fontSize: 12.5, color: "var(--cg-muted)", marginTop: 4 }}>Registered PL · VAT PL7831094562</div>
+              </div>
+              <div style={{ textAlign: "center" }}>
+                <div className="cg-fig" style={{ fontSize: 46, color: "var(--cg-caution)" }}>100<span style={{ fontSize: 18, color: "var(--cg-very-muted)" }}>/100</span></div>
+                <div style={{ fontSize: 10, textTransform: "uppercase", letterSpacing: "0.08em", color: "var(--cg-very-muted)", marginTop: 2 }}>Risk score</div>
+              </div>
+            </div>
+            <div style={{ display: "flex", alignItems: "center", gap: 12, marginTop: 18, padding: "13px 16px", background: "var(--cg-primary)", borderRadius: "var(--radius-md)" }}>
+              <span style={{ display: "inline-flex", alignItems: "center", flexShrink: 0, fontSize: 11, fontWeight: 500, textTransform: "uppercase", letterSpacing: "0.06em", color: "var(--cg-background)", background: "var(--cg-caution)", padding: "7px 13px", borderRadius: "var(--radius-pill)", whiteSpace: "nowrap" }}>Stop · Escalate</span>
+              <span style={{ fontSize: 12.5, color: "rgba(253,252,249,0.82)", lineHeight: 1.45 }}>Strong signals against engagement. Escalate before assigning a load.</span>
+            </div>
+            <div style={{ fontSize: 11, fontWeight: 500, textTransform: "uppercase", letterSpacing: "0.1em", color: "var(--cg-very-muted)", marginTop: 20 }}>Worth knowing</div>
+            <SigRow icon={Ic.alert} title="Sender domain consistency" desc="Outreach domain registered 9 days ago and does not match the registered company." sev="Critical" tone="review" />
+            <SigRow icon={Ic.scale} title="Sanctions screening" desc="Beneficial owner appears in a shared network flag raised by two forwarders." sev="High" tone="review" />
+            <SigRow icon={Ic.building} title="Operational presence" desc="No verifiable yard, fleet records or filed accounts for the stated volume." sev="High" tone="review" />
+            <SigRow icon={Ic.fileChk} title="Document trail" desc="Insurance certificate reused across three unrelated carrier identities." sev="Low" tone="neutral" />
+          </div>
+          <Callout className="cg-anim cg-anim-4" style={{ left: 8, top: 40 }}>Instant risk score and verdict</Callout>
+          <Callout className="cg-anim cg-anim-5" style={{ left: 8, top: 250 }}>Shared network flags</Callout>
+          <Callout className="cg-anim cg-anim-6" style={{ right: 8, top: 360 }}>Severity grading per signal</Callout>
+        </div>
+      </div>
+      <Foot page="05" label="Product" />
+    </div>
+  );
+}
+
+/* ============================================================ SLIDE 05 WHY NOW */
+function Force({ idx, title, body, metric, metricSub, tone }) {
+  const col = tone === "caution" ? "var(--cg-caution)" : (tone === "sage" ? "var(--cg-sage)" : "var(--cg-primary)");
+  return (
+    <div style={{ display: "grid", gridTemplateColumns: "92px 1fr 260px", alignItems: "center", gap: 28 }}>
+      <div className="cg-fig" style={{ fontSize: 40, color: "var(--cg-border)", fontWeight: 500 }}>{idx}</div>
+      <div>
+        <div style={{ fontSize: 18, fontWeight: 500, color: "var(--cg-primary)", letterSpacing: "-0.01em" }}>{title}</div>
+        <div style={{ fontSize: 13, color: "var(--cg-muted)", marginTop: 7, lineHeight: 1.55, maxWidth: 560 }}>{body}</div>
+      </div>
+      <div style={{ textAlign: "right" }}>
+        <div className="cg-fig" style={{ fontSize: metric.length > 5 ? 38 : 56, color: col }}>{metric}</div>
+        <div style={{ fontSize: 11, textTransform: "uppercase", letterSpacing: "0.08em", color: "var(--cg-very-muted)", marginTop: 6 }}>{metricSub}</div>
+      </div>
+    </div>
+  );
+}
+function Slide05() {
+  return (
+    <div className="cg-slide">
+      <Mark className="cg-bgmark" size={560} style={{ right: -150, top: -120 }} />
+      <div className="cg-pad">
+        <Eyebrow className="cg-anim cg-anim-1">Why now</Eyebrow>
+        <h1 className="cg-anim cg-anim-2" style={{ margin: "18px 0 6px", fontSize: 33, fontWeight: 500, letterSpacing: "-0.02em", lineHeight: 1.12, maxWidth: 1140 }}>
+          Three forces have converged to make this the right moment
+        </h1>
+        <div style={{ flex: 1, display: "flex", flexDirection: "column", marginTop: 12, paddingBottom: 40 }}>
+          <div className="cg-anim cg-anim-3" style={{ flex: 1, display: "flex", flexDirection: "column", justifyContent: "center", borderTop: "1px solid var(--cg-border)" }}>
+            <Force idx="01" title="Crime wave accelerating fastest in Europe"
+              body="EU cargo theft losses grew 438% between 2022 and 2023, and 1,000% since 2021. The numbers are widely considered underreported."
+              metric="438%" metricSub="loss growth, 2022 to 2023" tone="caution" />
+          </div>
+          <div className="cg-anim cg-anim-4" style={{ flex: 1, display: "flex", flexDirection: "column", justifyContent: "center", borderTop: "1px solid var(--cg-border)" }}>
+            <Force idx="02" title="Regulatory pressure creating immediate compliance need"
+              body="A US May 2026 ruling exposed freight brokers to negligent hiring liability for poor carrier selection. EU eFTI regulation mandates fully digital freight documentation by July 2027, making freight data aggregatable at scale for the first time."
+              metric="Jul 2027" metricSub="eFTI digital mandate" tone="ink" />
+          </div>
+          <div className="cg-anim cg-anim-5" style={{ flex: 1, display: "flex", flexDirection: "column", justifyContent: "center", borderTop: "1px solid var(--cg-border)" }}>
+            <Force idx="03" title="The infrastructure to build this is finally within reach"
+              body="EU registries have opened API access, making cross-border data aggregation buildable by a small team. AI now enables ownership graph analysis and fraud pattern detection in seconds."
+              metric="In seconds" metricSub="ownership graph + pattern AI" tone="sage" />
+          </div>
+        </div>
+      </div>
+      <Foot page="06" label="Why now" />
+    </div>
+  );
+}
+
+/* ============================================================ SLIDE 06 MARKET SIZE */
+function TierLegend({ swatch, border, tier, scope, num, desc, numColor }) {
+  return (
+    <div style={{ display: "flex", gap: 18 }}>
+      <span style={{ width: 14, height: 14, borderRadius: 4, background: swatch, border: border ? `1.5px solid ${border}` : "none", flexShrink: 0, marginTop: 9 }} />
+      <div>
+        <div style={{ display: "flex", alignItems: "baseline", gap: 11 }}>
+          <span className="cg-fig" style={{ fontSize: 32, color: numColor }}>{num}</span>
+          <span style={{ fontSize: 11, fontWeight: 500, textTransform: "uppercase", letterSpacing: "0.1em", color: "var(--cg-very-muted)", whiteSpace: "nowrap" }}>{tier} · ARR</span>
+        </div>
+        <div style={{ fontSize: 14.5, fontWeight: 500, marginTop: 6, color: "var(--cg-primary)" }}>{scope}</div>
+        <div style={{ fontSize: 12.5, color: "var(--cg-muted)", marginTop: 5, lineHeight: 1.5, maxWidth: 470 }}>{desc}</div>
+      </div>
+    </div>
+  );
+}
+function Slide06() {
+  return (
+    <div className="cg-slide">
+      <div className="cg-pad">
+        <Eyebrow className="cg-anim cg-anim-1">Market size</Eyebrow>
+        <h1 className="cg-anim cg-anim-2" style={{ margin: "18px 0 0", fontSize: 34, fontWeight: 500, letterSpacing: "-0.02em" }}>
+          Start in CEE, expand as the dataset compounds
+        </h1>
+        <div style={{ flex: 1, display: "grid", gridTemplateColumns: "400px 1fr", gap: 72, alignItems: "center", paddingBottom: 26 }}>
+          <div className="cg-anim cg-anim-3" style={{ position: "relative", width: 400, height: 400, margin: "0 auto" }}>
+            <div style={{ position: "absolute", inset: 0, background: "var(--cg-white)", border: "1.5px solid var(--cg-border)", borderRadius: "var(--radius-xl)" }} />
+            <div style={{ position: "absolute", left: 46, top: 46, right: 46, bottom: 46, background: "var(--cg-sage-light)", borderRadius: "var(--radius-lg)" }} />
+            <div style={{ position: "absolute", left: 120, top: 120, right: 120, bottom: 120, background: "var(--cg-sage)", borderRadius: "var(--radius-md)" }} />
+            <div style={{ position: "absolute", top: 18, left: 0, right: 0, textAlign: "center" }}>
+              <span style={{ fontSize: 11, fontWeight: 500, letterSpacing: "0.1em", textTransform: "uppercase", color: "var(--cg-very-muted)" }}>TAM</span>
+              <span className="cg-fig" style={{ fontSize: 24, color: "var(--cg-very-muted)", marginLeft: 10 }}>€2.5–4B</span>
+            </div>
+            <div style={{ position: "absolute", top: 60, left: 0, right: 0, textAlign: "center" }}>
+              <span style={{ fontSize: 11, fontWeight: 500, letterSpacing: "0.1em", textTransform: "uppercase", color: "var(--cg-sage)" }}>SAM</span>
+              <span className="cg-fig" style={{ fontSize: 24, color: "var(--cg-sage)", marginLeft: 10 }}>€500–700M</span>
+            </div>
+            <div style={{ position: "absolute", left: 120, top: 120, right: 120, bottom: 120, display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", color: "var(--cg-background)" }}>
+              <span style={{ fontSize: 11, fontWeight: 500, letterSpacing: "0.1em", textTransform: "uppercase", opacity: 0.85 }}>SOM</span>
+              <span className="cg-fig" style={{ fontSize: 24, marginTop: 4 }}>€20–30M</span>
+            </div>
+          </div>
+          <div className="cg-anim cg-anim-4" style={{ display: "flex", flexDirection: "column", gap: 30 }}>
+            <TierLegend swatch="var(--cg-white)" border="var(--cg-border)" tier="TAM" num="€2.5–4B" numColor="var(--cg-primary)"
+              scope="The full freight trust market"
+              desc="Every actor making trust decisions in freight: forwarders, insurers, freight finance, and carrier accreditation. Sized at 5–10% of $40B in annual global cargo losses." />
+            <TierLegend swatch="var(--cg-sage-light)" tier="SAM" num="€500–700M" numColor="var(--cg-sage)"
+              scope="All EU freight forwarders, enterprises and insurers"
+              desc="80,000–120,000 SMB firms plus 2,000–3,000 enterprise logos, plus early insurer and freight finance integrations." />
+            <TierLegend swatch="var(--cg-sage)" tier="SOM" num="€20–30M" numColor="var(--cg-sage)"
+              scope="CEE SMBs and EU enterprise"
+              desc="8,000–12,000 CEE firms plus 30–60 EU enterprise logos." />
+          </div>
+        </div>
+      </div>
+      <div className="cg-foot">
+        <span style={{ textTransform: "none", letterSpacing: 0, color: "var(--cg-muted)", fontSize: 12.5 }}>Full market size methodology in appendix.</span>
+        <span style={{ fontVariantNumeric: "tabular-nums" }}>07</span>
+      </div>
+    </div>
+  );
+}
+
+/* ============================================================ SLIDE 07 BUSINESS MODEL */
+function PriceRow({ a, b, c }) {
+  return (
+    <div style={{ display: "flex", alignItems: "baseline", gap: 10, padding: "9px 0", borderTop: "1px solid var(--cg-border)", fontSize: 13 }}>
+      <span style={{ fontWeight: 500, flex: "0 0 92px", color: "var(--cg-primary)" }}>{a}</span>
+      <span style={{ flex: 1, color: "var(--cg-muted)" }}>{b}</span>
+      <span style={{ fontWeight: 500, color: "var(--cg-sage)", whiteSpace: "nowrap" }}>{c}</span>
+    </div>
+  );
+}
+function Slide07() {
+  const expand = [
+    [Ic.fileChk, "COI verification", "per-check add-on"],
+    [Ic.trend, "Claims acceleration", "pre-load evidence monetised"],
+    [Ic.shieldChk, "TAPA compliance support", "enablement subscription"],
+    [Ic.spark, "CarrierGuard Verified", "carrier-paid accreditation"],
+    [Ic.scale, "Insurer and freight finance", "per-query, GDPR-safe"],
+  ];
+  return (
+    <div className="cg-slide">
+      <div className="cg-pad">
+        <Eyebrow className="cg-anim cg-anim-1">Business model</Eyebrow>
+        <h1 className="cg-anim cg-anim-2" style={{ margin: "16px 0 18px", fontSize: 33, fontWeight: 500, letterSpacing: "-0.02em" }}>
+          We build one asset and charge for it in several ways
+        </h1>
+        <div className="cg-anim cg-anim-3" style={{ display: "flex", alignItems: "center", background: "var(--cg-primary)", color: "var(--cg-background)",
+          borderRadius: "var(--radius-lg)", padding: "20px 32px" }}>
+          <div style={{ flex: 1, display: "flex", alignItems: "center", justifyContent: "space-around", gap: 24 }}>
+            <div>
+              <div className="cg-fig" style={{ fontSize: 28, color: "var(--cg-sage-light)" }}>€100K–500K</div>
+              <div style={{ fontSize: 12, color: "rgba(253,252,249,0.65)", marginTop: 5 }}>value protected per prevented loss</div>
+            </div>
+            <span style={{ fontSize: 13, color: "rgba(253,252,249,0.4)", textTransform: "uppercase", letterSpacing: "0.14em" }}>vs</span>
+            <div>
+              <div className="cg-fig" style={{ fontSize: 28, color: "var(--cg-background)" }}>€2K–100K</div>
+              <div style={{ fontSize: 12, color: "rgba(253,252,249,0.65)", marginTop: 5 }}>what we charge per year</div>
+            </div>
+          </div>
+          <div style={{ width: 1, alignSelf: "stretch", background: "rgba(253,252,249,0.18)", margin: "0 34px" }} />
+          <div style={{ flex: "0 0 auto", maxWidth: 260 }}>
+            <div style={{ fontSize: 11, fontWeight: 500, textTransform: "uppercase", letterSpacing: "0.12em", color: "var(--cg-sage-light)", marginBottom: 6 }}>The result</div>
+            <div style={{ fontSize: 20, fontWeight: 500, color: "var(--cg-background)", lineHeight: 1.2 }}>Obvious ROI from day one</div>
+          </div>
+        </div>
+        <div className="cg-anim cg-anim-4" style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 18, marginTop: 18 }}>
+          <div style={{ background: "var(--cg-sage-light)", border: "1.5px solid var(--cg-sage)", borderRadius: "var(--radius-lg)", padding: "18px 22px" }}>
+            <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+              <Tag tone="neutral">Stream 1</Tag>
+              <span style={{ fontSize: 15.5, fontWeight: 500 }}>Shared blacklist access</span>
+            </div>
+            <p style={{ margin: "10px 0 0", fontSize: 12.5, color: "var(--cg-dark)", lineHeight: 1.5 }}>
+              The entry product. Seeded for free during network building, then converted to paid once the list reaches critical mass.
+            </p>
+            <div style={{ marginTop: 8 }}>
+              <PriceRow a="SMB" b="annual subscription" c="full shared database" />
+              <PriceRow a="Enterprise" b="annual subscription" c="API + onboarding" />
+              <PriceRow a="Seeders" b="early contributors" c="preferential pricing" />
+            </div>
+          </div>
+          <div style={{ background: "var(--cg-white)", border: "1px solid var(--cg-border)", borderRadius: "var(--radius-lg)", padding: "18px 22px" }}>
+            <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+              <Tag tone="neutral">Stream 2</Tag>
+              <span style={{ fontSize: 15.5, fontWeight: 500 }}>Carrier verification</span>
+            </div>
+            <p style={{ margin: "10px 0 0", fontSize: 12.5, color: "var(--cg-dark)", lineHeight: 1.5 }}>
+              The core verification tool. Per-seat pricing that scales from SMB to enterprise, with usage on top.
+            </p>
+            <div style={{ marginTop: 8 }}>
+              <PriceRow a="SMB" b="~4 seats · €75/seat/month" c="€3.6K/yr" />
+              <PriceRow a="Enterprise" b="~150 seats · €40/seat/month" c="€72K/yr" />
+              <PriceRow a="Overage" b="scales with freight volume" c="on top" />
+            </div>
+          </div>
+        </div>
+        <div className="cg-anim cg-anim-5" style={{ marginTop: 18 }}>
+          <div style={{ fontSize: 11, fontWeight: 500, textTransform: "uppercase", letterSpacing: "0.1em", color: "var(--cg-sage)", marginBottom: 10 }}>Further expansion streams</div>
+          <div style={{ display: "grid", gridTemplateColumns: "repeat(5, 1fr)", gap: 10 }}>
+            {expand.map(([icon, t, d], i) => (
+              <div key={i} style={{ background: "var(--cg-white)", border: "1px solid var(--cg-border)", borderRadius: "var(--radius-md)", padding: "13px 14px" }}>
+                <span style={{ color: "var(--cg-sage)", display: "inline-flex" }}><Icon d={icon} size={18} /></span>
+                <div style={{ fontSize: 12.5, fontWeight: 500, marginTop: 9, lineHeight: 1.25 }}>{t}</div>
+                <div style={{ fontSize: 11, color: "var(--cg-muted)", marginTop: 4, lineHeight: 1.4 }}>{d}</div>
+              </div>
+            ))}
+          </div>
+        </div>
+      </div>
+      <Foot page="08" label="Business model" />
+    </div>
+  );
+}
+
+/* ============================================================ SLIDE 08 GO TO MARKET */
+function StageCard({ title, body, extra, accent }) {
+  return (
+    <div style={{ flex: 1, display: "flex", flexDirection: "column",
+      background: accent ? "var(--cg-sage-light)" : "var(--cg-white)",
+      border: accent ? "1.5px solid var(--cg-sage)" : "1px solid var(--cg-border)",
+      borderRadius: "var(--radius-lg)", padding: "18px 18px", boxShadow: "var(--shadow-xs)" }}>
+      {accent && <div style={{ marginBottom: 9 }}><Tag tone="verified">Payoff</Tag></div>}
+      <div style={{ fontSize: 15, fontWeight: 500, lineHeight: 1.25, color: "var(--cg-primary)" }}>{title}</div>
+      <div style={{ fontSize: 11.5, color: "var(--cg-muted)", marginTop: 8, lineHeight: 1.5 }}>{body}</div>
+      {extra && (
+        <div style={{ marginTop: "auto", paddingTop: 12 }}>
+          <div style={{ padding: "9px 12px", background: "var(--cg-sage-light)", border: "1px solid var(--cg-sage)", borderRadius: "var(--radius-sm)", fontSize: 11, color: "var(--cg-dark)", lineHeight: 1.45 }}>{extra}</div>
+        </div>
+      )}
+    </div>
+  );
+}
+function Slide08() {
+  const stages = [
+    { label: "Seed", title: "Seed: free blacklist exchange",
+      body: "Freight forwarders already share carrier blacklists informally. We formalise that behaviour. We cold-call forwarders across CEE: share your internal blacklist, get access to everyone else's. No cost, no integration.",
+      extra: "Threshold: at ~4,000 shared entries the list becomes useful enough to charge for. That triggers Stage 02." },
+    { label: "Monetise", title: "Monetise: paid access to the list and the tool",
+      body: "We flip blacklist access from free to paid and launch the real-time verification tool, also paid: a growing fraud database plus an instant check across 30+ registries and shared signals. Early seeders get preferential pricing." },
+    { label: "Scale", title: "Scale: growth and sales",
+      body: "The network effect does the selling. Every check improves the dataset, every user strengthens the network. Mid-market forwarders convert on the product alone, with no IT involvement needed." },
+    { label: "Expand", title: "Expand the product suite",
+      body: "As the dataset matures, we open access to carriers seeking accreditation and insurers embedding risk decisions into their workflows.", accent: true },
+  ];
+  return (
+    <div className="cg-slide">
+      <div className="cg-pad">
+        <Eyebrow className="cg-anim cg-anim-1">Go to market</Eyebrow>
+        <div className="cg-anim cg-anim-2" style={{ display: "flex", alignItems: "flex-end", justifyContent: "space-between", gap: 30, marginTop: 16 }}>
+          <h1 style={{ margin: 0, fontSize: 33, fontWeight: 500, letterSpacing: "-0.02em" }}>Seed the network, then charge for it</h1>
+          <p style={{ margin: 0, fontSize: 15, color: "var(--cg-muted)", lineHeight: 1.5, maxWidth: 560, textAlign: "right", whiteSpace: "nowrap" }}>
+            We enter for free, convert once the network has value, then expand.
+          </p>
+        </div>
+        <div className="cg-anim cg-anim-3" style={{ flex: 1, display: "flex", flexDirection: "column", justifyContent: "space-evenly", paddingTop: 8, paddingBottom: 28 }}>
+          <div>
+            <div style={{ display: "flex", marginBottom: 14 }}>
+              <div style={{ flex: 1, textAlign: "center" }}>
+                <span style={{ fontSize: 10.5, fontWeight: 500, textTransform: "uppercase", letterSpacing: "0.1em", color: "var(--cg-very-muted)" }}>Free to enter</span>
+              </div>
+              <div style={{ flex: 3, textAlign: "center" }}>
+                <span style={{ fontSize: 10.5, fontWeight: 500, textTransform: "uppercase", letterSpacing: "0.1em", color: "var(--cg-sage)" }}>Paid, once the network has value</span>
+              </div>
+            </div>
+            <div style={{ position: "relative" }}>
+              <div style={{ position: "absolute", top: 11, left: "12.5%", right: "62.5%", height: 2, background: "var(--cg-border)" }} />
+              <div style={{ position: "absolute", top: 11, left: "37.5%", right: "12.5%", height: 2, background: "var(--cg-sage)", opacity: 0.55 }} />
+              <div style={{ display: "flex" }}>
+                {stages.map((s, i) => {
+                  const paid = i >= 1;
+                  return (
+                    <div key={i} style={{ flex: 1, display: "flex", flexDirection: "column", alignItems: "center" }}>
+                      <div style={{ width: 24, height: 24, borderRadius: "50%", background: paid ? "var(--cg-sage)" : "var(--cg-background)", border: `2px solid ${paid ? "var(--cg-sage)" : "var(--cg-very-muted)"}`, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 11, fontWeight: 500, color: paid ? "var(--cg-background)" : "var(--cg-very-muted)", position: "relative", zIndex: 1 }}>{i + 1}</div>
+                      <div style={{ fontSize: 12, fontWeight: 500, marginTop: 9, color: paid ? "var(--cg-sage)" : "var(--cg-very-muted)" }}>{s.label}</div>
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
+          </div>
+          <div style={{ display: "flex", gap: 16, alignItems: "stretch" }}>
+            {stages.map((s, i) => (
+              <StageCard key={i} title={s.title} body={s.body} extra={s.extra} accent={s.accent} />
+            ))}
+          </div>
+        </div>
+      </div>
+      <Foot page="09" label="Go to market" />
+    </div>
+  );
+}
+
+/* ============================================================ SLIDE 09 COMPETITION */
+function CompCard({ role, roleTone, names, body, icon, iconColor, accentBorder }) {
+  return (
+    <div style={{ flex: 1, background: "var(--cg-white)", border: accentBorder ? `1.5px solid ${accentBorder}` : "1px solid var(--cg-border)",
+      borderRadius: "var(--radius-lg)", padding: "22px 22px", boxShadow: "var(--shadow-xs)", display: "flex", flexDirection: "column" }}>
+      <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
+        <Tag tone={roleTone} style={{ padding: "7px 13px" }}>{role}</Tag>
+        <span style={{ color: iconColor, display: "inline-flex" }}><Icon d={icon} size={22} /></span>
+      </div>
+      <div style={{ fontSize: 18, fontWeight: 500, marginTop: 16, letterSpacing: "-0.01em", lineHeight: 1.2 }}>{names}</div>
+      <div style={{ fontSize: 12.5, color: "var(--cg-muted)", marginTop: 10, lineHeight: 1.55 }}>{body}</div>
+    </div>
+  );
+}
+function Slide09() {
+  return (
+    <div className="cg-slide">
+      <div className="cg-pad">
+        <Eyebrow className="cg-anim cg-anim-1">Competition</Eyebrow>
+        <h1 className="cg-anim cg-anim-2" style={{ margin: "16px 0 24px", fontSize: 27, fontWeight: 500, letterSpacing: "-0.02em", lineHeight: 1.15, maxWidth: 1140 }}>
+          US companies prove the demand. No meaningful European competitor exists yet.
+        </h1>
+        <div style={{ flex: 1, display: "flex", flexDirection: "column", justifyContent: "space-evenly", paddingBottom: 10 }}>
+          <div className="cg-anim cg-anim-3" style={{ display: "flex", gap: 18, alignItems: "stretch" }}>
+            <CompCard role="Proof of demand" roleTone="verified" names="Highway, Descartes, CarrierMonitor"
+              icon={Ic.trend} iconColor="var(--cg-sage)" accentBorder="var(--cg-sage)"
+              body="Over $100M raised, serving thousands of US brokers. Built on FMCSA/USDOT data that does not exist in Europe. GDPR-incompatible. Not a threat here, but a clear signal the market is real." />
+            <CompCard role="Key EU competitor" roleTone="neutral" names="TrustedCarrier"
+              icon={Ic.shield} iconColor="var(--cg-muted)"
+              body="German, state-backed. Carriers self-enrol and pay for their own profile. No cross-company fraud network, no pattern-based signals. A whitelist, not an intelligence layer." />
+            <CompCard role="Substitutes" roleTone="review" names="Manual checks and informal blacklists"
+              icon={Ic.clipboard} iconColor="var(--cg-caution)"
+              body="Security managers maintain hand-built blacklists, share intel informally, and cross-check registries under time pressure. Fast to fool, impossible to scale." />
+          </div>
+          <div className="cg-anim cg-anim-4" style={{ background: "var(--cg-primary)", borderRadius: "var(--radius-lg)", padding: "24px 34px" }}>
+            <div style={{ fontSize: 11, fontWeight: 500, textTransform: "uppercase", letterSpacing: "0.12em", color: "var(--cg-sage-light)", marginBottom: 16 }}>The opening</div>
+            <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: 32 }}>
+              {[
+                ["Substitutes cannot do the job", "Manual checks and informal blacklists are fast to fool and impossible to scale. The need is real, and unmet.", false],
+                ["The one EU competitor is boxed in", "TrustedCarrier is a self-enrol whitelist, not a cross-company intelligence layer. Structurally constrained.", false],
+                ["The European market is open", "No GDPR-native fraud intelligence network exists yet. That is the gap CarrierGuard is built to fill.", true],
+              ].map(([h, b, hi], i) => (
+                <div key={i}>
+                  <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+                    <span style={{ width: 7, height: 7, borderRadius: "50%", background: hi ? "var(--cg-sage-light)" : "rgba(253,252,249,0.4)", flexShrink: 0 }} />
+                    <span style={{ fontSize: 16, fontWeight: 500, color: hi ? "var(--cg-sage-light)" : "var(--cg-background)", letterSpacing: "-0.01em" }}>{h}</span>
+                  </div>
+                  <div style={{ fontSize: 12.5, color: "rgba(253,252,249,0.62)", marginTop: 9, lineHeight: 1.55, paddingLeft: 17 }}>{b}</div>
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
+      </div>
+      <Foot page="10" label="Competition" />
+    </div>
+  );
+}
+
+/* ============================================================ SLIDE 10 TRACTION */
+function Milestone({ n, text, last, accent }) {
+  return (
+    <div style={{ flex: 1, position: "relative", paddingTop: 30 }}>
+      <div style={{ position: "absolute", top: 0, left: 0, right: last ? "50%" : 0, height: 2, background: accent ? "var(--cg-sage)" : "var(--cg-border)" }} />
+      <div style={{ position: "absolute", top: -8, left: 0, width: 18, height: 18, borderRadius: "50%",
+        background: accent ? "var(--cg-sage)" : "var(--cg-background)", border: `2px solid ${accent ? "var(--cg-sage)" : "var(--cg-very-muted)"}`,
+        display: "flex", alignItems: "center", justifyContent: "center" }}>
+        {accent && <span style={{ width: 6, height: 6, borderRadius: "50%", background: "var(--cg-background)" }} />}
+      </div>
+      <div style={{ fontSize: 12, fontWeight: 500, color: accent ? "var(--cg-sage)" : "var(--cg-very-muted)" }}>{n}</div>
+      <div style={{ fontSize: 11.5, color: "var(--cg-primary)", marginTop: 7, lineHeight: 1.45, paddingRight: 16 }}>{text}</div>
+    </div>
+  );
+}
+function Slide10() {
+  const evidence = [
+    "Multiple account hijacking incidents on freight exchanges confirmed, with repeat occurrences across recent years",
+    "Real impersonation case shared: fraudster spoofed a legitimate carrier using a fake email domain, took a Germany-to-France transport",
+    "A list of carriers that used domain fraud offered to us directly",
+    "Desired verifications take 20-25 minutes and miss pattern-based signals entirely",
+    "~700 past fake carriers already obtained for our initial dataset",
+    "Confirmed: freight forwarders already share blacklists informally, creating immediate appetite for a formalised version",
+  ];
+  return (
+    <div className="cg-slide">
+      <div className="cg-pad">
+        <Eyebrow className="cg-anim cg-anim-1">Traction</Eyebrow>
+        <h1 className="cg-anim cg-anim-2" style={{ margin: "12px 0 18px", fontSize: 30, fontWeight: 500, letterSpacing: "-0.02em" }}>
+          Early validation from inside the industry
+        </h1>
+        <div style={{ display: "grid", gridTemplateColumns: "1.05fr 0.95fr", gap: 34 }}>
+          <div className="cg-anim cg-anim-3" style={{ position: "relative", background: "var(--cg-sage-light)", border: "1.5px solid var(--cg-sage)", borderRadius: "var(--radius-xl)", padding: "22px 24px", overflow: "hidden" }}>
+            <Icon d={Ic.building} size={140} style={{ position: "absolute", right: -18, bottom: -24, color: "var(--cg-sage)", opacity: 0.1 }} />
+            <Tag tone="verified">Enterprise traction</Tag>
+            <div style={{ fontSize: 24, fontWeight: 500, marginTop: 14, color: "var(--cg-primary)", letterSpacing: "-0.02em", lineHeight: 1.14, maxWidth: 440, position: "relative" }}>A top-10 global logistics company is actively engaged</div>
+            <p style={{ margin: "12px 0 0", fontSize: 12.5, color: "var(--cg-dark)", lineHeight: 1.55, maxWidth: 470, position: "relative" }}>
+              Three meetings held, MVP demoed to their security team, v2 shipped on their feedback. Their internal champion has offered to sign an LOI. They have offered to refer us to a second major logistics firm, giving us a warm path to a second enterprise account pre-raise.
+            </p>
+            <div style={{ display: "flex", flexWrap: "wrap", gap: 8, marginTop: 16, position: "relative" }}>
+              {["3 meetings held", "MVP demoed", "v2 shipped", "LOI offered", "Warm referral"].map((c, i) => (
+                <span key={i} style={{ fontSize: 11, fontWeight: 500, color: "var(--cg-sage)", background: "rgba(255,255,255,0.7)", border: "1px solid var(--cg-sage)", borderRadius: "var(--radius-pill)", padding: "5px 11px", whiteSpace: "nowrap" }}>{c}</span>
+              ))}
+            </div>
+          </div>
+          <div className="cg-anim cg-anim-4">
+            <div style={{ fontSize: 11, fontWeight: 500, textTransform: "uppercase", letterSpacing: "0.1em", color: "var(--cg-sage)" }}>Problem evidence</div>
+            <div style={{ display: "flex", flexDirection: "column", gap: 9, marginTop: 14 }}>
+              {evidence.map((e, i) => (
+                <div key={i} style={{ display: "flex", gap: 11, alignItems: "flex-start", fontSize: 12, color: "var(--cg-muted)", lineHeight: 1.45 }}>
+                  <span style={{ color: "var(--cg-sage)", flexShrink: 0, marginTop: 1, display: "inline-flex" }}><Icon d={Ic.check} size={15} /></span>{e}
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
+        <div className="cg-anim cg-anim-5" style={{ marginTop: 28, paddingBottom: 4 }}>
+          <div style={{ fontSize: 11, fontWeight: 500, textTransform: "uppercase", letterSpacing: "0.1em", color: "var(--cg-sage)", marginBottom: 22 }}>Near-term milestones</div>
+          <div style={{ display: "flex", gap: 12 }}>
+            <Milestone n="01" text="Begin cold outreach to CEE freight forwarders: offer free blacklist exchange to seed the shared database" />
+            <Milestone n="02" text="Sign LOI with enterprise anchor" />
+            <Milestone n="03" text="Meet second major logistics firm via warm referral" />
+            <Milestone n="04" text="Reach ~4,000 shared list entries: threshold for converting to paid access" />
+            <Milestone n="05" text="First paid pilot of carrier verification tool" last accent />
+          </div>
+        </div>
+      </div>
+      <Foot page="11" label="Traction" />
+    </div>
+  );
+}
+
+/* ============================================================ SLIDE 11 TEAM */
+function Person({ slotId, name, role, tags, bullets }) {
+  return (
+    <div style={{ flex: 1, background: "var(--cg-white)", border: "1px solid var(--cg-border)", borderRadius: "var(--radius-xl)", padding: "26px 26px", display: "flex", flexDirection: "column" }}>
+      <image-slot id={slotId} shape="circle" placeholder="Drop photo"
+        style={{ width: "104px", height: "104px", display: "block", margin: "0 auto" }}></image-slot>
+      <div style={{ textAlign: "center", marginTop: 16 }}>
+        <div style={{ fontSize: 19, fontWeight: 500, letterSpacing: "-0.01em" }}>{name}</div>
+        <div style={{ fontSize: 12, fontWeight: 500, textTransform: "uppercase", letterSpacing: "0.08em", color: "var(--cg-sage)", marginTop: 6 }}>{role}</div>
+      </div>
+      <div style={{ fontSize: 11.5, color: "var(--cg-muted)", textAlign: "center", marginTop: 10, lineHeight: 1.5, textWrap: "balance" }}>{tags}</div>
+      <hr className="cg-rule" style={{ margin: "18px 0" }} />
+      <div style={{ display: "flex", flexDirection: "column", gap: 11 }}>
+        {bullets.map((b, i) => (
+          <div key={i} style={{ display: "flex", gap: 10, alignItems: "flex-start", fontSize: 12.5, color: b.muted ? "var(--cg-very-muted)" : "var(--cg-primary)", lineHeight: 1.45, fontStyle: b.muted ? "italic" : "normal" }}>
+            {!b.muted && <span style={{ width: 5, height: 5, borderRadius: "50%", background: "var(--cg-sage)", flexShrink: 0, marginTop: 6 }} />}
+            {b.muted && <span style={{ width: 5, height: 5, borderRadius: "50%", border: "1px solid var(--cg-very-muted)", flexShrink: 0, marginTop: 6 }} />}
+            <span>{b.t}</span>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
+function Slide11() {
+  return (
+    <div className="cg-slide">
+      <div className="cg-pad">
+        <Eyebrow className="cg-anim cg-anim-1">Team</Eyebrow>
+        <h1 className="cg-anim cg-anim-2" style={{ margin: "16px 0 24px", fontSize: 32, fontWeight: 500, letterSpacing: "-0.02em" }}>
+          Built by people who know this problem firsthand
+        </h1>
+        <div className="cg-anim cg-anim-3" style={{ display: "flex", gap: 20, flex: 1, paddingBottom: 78 }}>
+          <Person slotId="team-zosia" name="Zofia Krajewska" role="CEO"
+            tags="Commercial strategy · GTM · fundraising · investor relations"
+            bullets={[
+              { t: "Built £0 to £80K revenue in three months at Clerkenwell Health" },
+              { t: "Investment team at Antler" },
+              { t: "Strategy and Operations at ADC, a 150-person AI consultancy" },
+              { t: "Family roots in European freight logistics, the direct source of our enterprise access" },
+            ]} />
+          <Person slotId="team-alek" name="Aleksander Jędrosz" role="CTO"
+            tags="Technical architecture · fraud-detection intelligence · data pipelines · carrier and TMS integrations"
+            bullets={[
+              { t: "Engineering Team Lead at Snowflake Poland, building large-scale data infrastructure serving 100,000+ DAU" },
+              { t: "Additional accomplishments to be added", muted: true },
+            ]} />
+          <Person slotId="team-rafal" name="Rafał Krajewski" role="Advisor"
+            tags="Logistics industry insider · enterprise access · domain knowledge"
+            bullets={[
+              { t: "Decades at C-level inside European freight, with operator-level credibility in a relationship-driven industry" },
+              { t: "His network opened our first enterprise relationship and is the foundation of our GTM" },
+            ]} />
+        </div>
+      </div>
+      <Foot page="12" label="Team" />
+    </div>
+  );
+}
+
+/* ============================================================ SLIDE 12 USE OF FUNDS */
+function FundCard({ icon, title, body, primary, span }) {
+  return (
+    <div style={{ gridColumn: span ? "span 2" : "auto", display: "flex", flexDirection: "column", justifyContent: "center",
+      background: primary ? "var(--cg-sage-light)" : "var(--cg-white)",
+      border: primary ? "1.5px solid var(--cg-sage)" : "1px solid var(--cg-border)",
+      borderRadius: "var(--radius-lg)", padding: "20px 22px", boxShadow: "var(--shadow-xs)" }}>
+      <div style={{ display: "flex", alignItems: "center", gap: 11 }}>
+        <span style={{ color: "var(--cg-sage)", display: "inline-flex" }}><Icon d={icon} size={22} /></span>
+        <span style={{ fontSize: 15.5, fontWeight: 500 }}>{title}</span>
+        {primary && <Tag tone="verified" style={{ marginLeft: "auto" }}>Primary GTM</Tag>}
+      </div>
+      <p style={{ margin: "11px 0 0", fontSize: 12.5, color: primary ? "var(--cg-dark)" : "var(--cg-muted)", lineHeight: 1.55 }}>{body}</p>
+    </div>
+  );
+}
+function Slide12() {
+  return (
+    <div className="cg-slide">
+      <div className="cg-pad">
+        <Eyebrow className="cg-anim cg-anim-1">Use of funds</Eyebrow>
+        <h1 className="cg-anim cg-anim-2" style={{ margin: "16px 0 0", fontSize: 33, fontWeight: 500, letterSpacing: "-0.02em" }}>
+          Funding to reach first revenue and full-time focus
+        </h1>
+        <p className="cg-anim cg-anim-2" style={{ margin: "12px 0 0", fontSize: 14.5, color: "var(--cg-muted)", lineHeight: 1.5, maxWidth: 1160, whiteSpace: "nowrap" }}>
+          We are raising funding to seed the shared network, convert our enterprise anchor, and give both founders full-time focus on CarrierGuard.
+        </p>
+        <div className="cg-anim cg-anim-3" style={{ flex: 1, display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gridTemplateRows: "1fr 1fr", gap: 18, marginTop: 28, paddingBottom: 82 }}>
+          <FundCard icon={Ic.seed} title="Blacklist network seeding" primary span
+            body="Cold outreach to CEE freight forwarders to seed the shared blacklist. This is our primary GTM activity: calls, relationships, and onboarding the first contributing partners before the list converts to paid." />
+          <FundCard icon={Ic.building} title="Enterprise conversion"
+            body="Converting our enterprise anchor to a first paid pilot and meeting the second major logistics firm via the warm referral already offered to us." />
+          <FundCard icon={Ic.cpu} title="Product development"
+            body="Completing the core carrier verification product, expanding registry coverage, and building the shared intelligence layer on top of the growing blacklist dataset." />
+          <FundCard icon={Ic.userPlus} title="Engineering hire"
+            body="Bringing on a first engineering hire to accelerate product development and expand data pipeline capacity." />
+          <FundCard icon={Ic.users} title="Founder salaries"
+            body="Enabling both founders to go full-time on CarrierGuard." />
+        </div>
+      </div>
+      <Foot page="13" label="Use of funds" />
+    </div>
+  );
+}
+
+/* ============================================================ SLIDE 13 CLOSING */
+function Contact({ icon, children }) {
+  return (
+    <div style={{ display: "flex", alignItems: "center", gap: 11, color: "rgba(253,252,249,0.82)", fontSize: 15, whiteSpace: "nowrap" }}>
+      <span style={{ color: "var(--cg-sage-light)", display: "inline-flex" }}><Icon d={icon} size={18} /></span>{children}
+    </div>
+  );
+}
+function Slide13() {
+  return (
+    <div className="cg-slide cg-slide--dark">
+      <Mark className="cg-bgmark" size={620} theme="dark" style={{ left: -170, bottom: -190 }} />
+      <div className="cg-pad" style={{ alignItems: "center", justifyContent: "center", textAlign: "center", paddingBottom: 64 }}>
+        <Mark className="cg-anim cg-anim-1" size={72} theme="dark" />
+        <div className="cg-anim cg-anim-2" style={{ fontSize: 44, marginTop: 26, letterSpacing: "-0.02em", color: "var(--cg-background)" }}>
+          <span style={{ fontWeight: 400 }}>Carrier</span><span style={{ fontWeight: 500 }}>Guard</span>
+        </div>
+        <div className="cg-anim cg-anim-3" style={{ fontSize: 19, color: "var(--cg-sage-light)", marginTop: 16, fontWeight: 400, letterSpacing: "-0.01em" }}>
+          The trust infrastructure logistics has never had.
+        </div>
+        <div className="cg-anim cg-anim-4" style={{ display: "flex", alignItems: "center", gap: 32, marginTop: 44, flexWrap: "wrap", justifyContent: "center" }}>
+          <Contact icon={Ic.link}>carrierguard.eu</Contact>
+          <Contact icon={Ic.phone}>+48 698 443 535</Contact>
+        </div>
+        <div className="cg-anim cg-anim-5" style={{ display: "flex", alignItems: "center", gap: 12, marginTop: 16, color: "rgba(253,252,249,0.7)", fontSize: 14 }}>
+          <span style={{ color: "var(--cg-sage-light)", display: "inline-flex" }}><Icon d={Ic.mail} size={18} /></span>
+          zofia.krajewska@carrierguard.eu · aleksander.jedrosz@carrierguard.eu
+        </div>
+      </div>
+    </div>
+  );
+}
+
+/* ============================================================ RENDER */
+const slides = [
+  SlideTitle,
+  Slide01, Slide02, Slide03, Slide04, Slide05, Slide06, Slide07,
+  Slide08, Slide09, Slide10, Slide11, Slide12, Slide13,
+];
+
+const deck = document.getElementById("deck");
+slides.forEach((S) => {
+  const sec = document.createElement("section");
+  const mount = document.createElement("div");
+  sec.appendChild(mount);
+  deck.appendChild(sec);
+  ReactDOM.createRoot(mount).render(React.createElement(S));
+});
+
+const reduce = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+function animateIn(slide) {
+  if (!slide || reduce) return;
+  requestAnimationFrame(() => requestAnimationFrame(() => {
+    slide.querySelectorAll(".cg-anim").forEach((node) => {
+      const m = (node.className.match(/cg-anim-(\d)/) || [])[1];
+      const delay = m ? parseInt(m, 10) * 70 : 60;
+      node.animate(
+        [{ opacity: 0, transform: "translateY(12px)" }, { opacity: 1, transform: "none" }],
+        { duration: 460, delay, easing: "cubic-bezier(0.22, 1, 0.36, 1)" }
+      );
     });
+  }));
+}
+deck.addEventListener("slidechange", (e) => animateIn(e.detail.slide));
 
-    // Gentle, on-brand entrance: fade + small rise on the active slide's
-    // .cg-anim elements. Driven from JS because CSS animations on slotted
-    // content under <deck-stage> never receive a start time. Deferred two
-    // frames so the slide is laid out and visible before the timeline ticks.
-    const reduce = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
-    function animateIn(slide) {
-      if (!slide || reduce) return;
-      requestAnimationFrame(() => requestAnimationFrame(() => {
-        slide.querySelectorAll(".cg-anim").forEach((node) => {
-          const m = (node.className.match(/cg-anim-(\d)/) || [])[1];
-          const delay = m ? parseInt(m, 10) * 70 : 60;
-          node.animate(
-            [{ opacity: 0, transform: "translateY(12px)" }, { opacity: 1, transform: "none" }],
-            { duration: 460, delay, easing: "cubic-bezier(0.22, 1, 0.36, 1)" }
-          );
-        });
-      }));
-    }
-    deck.addEventListener("slidechange", (e) => animateIn(e.detail.slide));
-
-    // Load the deck shell AFTER slides are mounted so thumbnails + nav see real content.
-    const s = document.createElement("script");
-    s.src = "deck-stage.js";
-    document.body.appendChild(s);
+// Load deck-stage AFTER slides are mounted so thumbnails + nav see real content.
+const s = document.createElement("script");
+s.src = "deck-stage.js";
+document.body.appendChild(s);
   </script>
 </body>
 </html>
