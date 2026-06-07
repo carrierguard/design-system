@@ -2,75 +2,53 @@
 const { CGMark, CGWordmark, CGEyebrow, CGFoot, CGTag, CGIcon, CGIc } = window;
 
 /* ============================================================ 10 TRACTION */
-function Milestone({ n, text, last, accent }) {
-  return (
-    <div style={{ flex: 1, position: "relative", paddingTop: 30 }}>
-      <div style={{ position: "absolute", top: 0, left: 0, right: last ? "50%" : 0, height: 2, background: accent ? "var(--cg-sage)" : "var(--cg-border)" }} />
-      <div style={{ position: "absolute", top: -8, left: 0, width: 18, height: 18, borderRadius: "50%",
-        background: accent ? "var(--cg-sage)" : "var(--cg-background)", border: `2px solid ${accent ? "var(--cg-sage)" : "var(--cg-very-muted)"}`,
-        display: "flex", alignItems: "center", justifyContent: "center" }}>
-        {accent && <span style={{ width: 6, height: 6, borderRadius: "50%", background: "var(--cg-background)" }} />}
-      </div>
-      <div style={{ fontSize: 12, fontWeight: 500, color: accent ? "var(--cg-sage)" : "var(--cg-very-muted)" }}>{n}</div>
-      <div style={{ fontSize: 11.5, color: "var(--cg-primary)", marginTop: 7, lineHeight: 1.45, paddingRight: 16 }}>{text}</div>
-    </div>
-  );
-}
 function Slide10() {
   const evidence = [
     "Multiple account hijacking incidents on freight exchanges confirmed, with repeat occurrences across recent years",
-    "Real impersonation case shared: fraudster spoofed a legitimate carrier using a fake email domain, took a Germany-to-France transport",
-    "A list of carriers that used domain fraud offered to us directly",
-    "Desired verifications take 20-25 minutes and miss pattern-based signals entirely",
+    "Real impersonation case: fraudster spoofed a legitimate carrier via a fake email domain, took a Germany-to-France load",
     "~700 past fake carriers already obtained for our initial dataset",
-    "Confirmed: freight forwarders already share blacklists informally, creating immediate appetite for a formalised version",
+    "Desired verifications take 20–25 minutes and miss pattern-based signals entirely",
+    "A list of carriers using domain fraud offered to us directly",
   ];
   return (
     <div className="cg-slide">
       <div className="cg-pad">
         <CGEyebrow className="cg-anim cg-anim-1">Traction</CGEyebrow>
-        <h1 className="cg-anim cg-anim-2" style={{ margin: "12px 0 18px", fontSize: 30, fontWeight: 500, letterSpacing: "-0.02em" }}>
+        <h1 className="cg-anim cg-anim-2" style={{ margin: "12px 0 20px", fontSize: 30, fontWeight: 500, letterSpacing: "-0.02em" }}>
           Early validation from inside the industry
         </h1>
 
-        <div style={{ display: "grid", gridTemplateColumns: "1.05fr 0.95fr", gap: 34 }}>
+        <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: 20, flex: 1, paddingBottom: 24 }}>
+          {/* blacklist insight — lead card */}
+          <div className="cg-anim cg-anim-3" style={{ background: "var(--cg-primary)", borderRadius: "var(--radius-xl)", padding: "26px 24px", display: "flex", flexDirection: "column", position: "relative", overflow: "hidden" }}>
+            <CGIcon d={CGIc.shield} size={130} style={{ position: "absolute", right: -20, bottom: -24, color: "var(--cg-sage)", opacity: 0.12 }} />
+            <div style={{ fontSize: 11, fontWeight: 500, textTransform: "uppercase", letterSpacing: "0.1em", color: "var(--cg-sage-light)", marginBottom: 14 }}>Key insight</div>
+            <div style={{ fontSize: 22, fontWeight: 500, color: "var(--cg-background)", lineHeight: 1.2, letterSpacing: "-0.02em", position: "relative" }}>Forwarders already share blacklists informally</div>
+            <div style={{ fontSize: 12.5, color: "rgba(253,252,249,0.72)", marginTop: 14, lineHeight: 1.55, position: "relative" }}>The behaviour already exists — and creates immediate appetite for a formalised, shared version. We are not creating a habit; we are formalising one.</div>
+          </div>
+
           {/* enterprise hero */}
-          <div className="cg-anim cg-anim-3" style={{ position: "relative", background: "var(--cg-sage-light)", border: "1.5px solid var(--cg-sage)", borderRadius: "var(--radius-xl)", padding: "22px 24px", overflow: "hidden" }}>
-            <CGIcon d={CGIc.building} size={140} style={{ position: "absolute", right: -18, bottom: -24, color: "var(--cg-sage)", opacity: 0.1 }} />
+          <div className="cg-anim cg-anim-4" style={{ position: "relative", background: "var(--cg-sage-light)", border: "1.5px solid var(--cg-sage)", borderRadius: "var(--radius-xl)", padding: "22px 24px", overflow: "hidden" }}>
+            <CGIcon d={CGIc.building} size={130} style={{ position: "absolute", right: -18, bottom: -24, color: "var(--cg-sage)", opacity: 0.1 }} />
             <CGTag tone="verified">Enterprise traction</CGTag>
-            <div style={{ fontSize: 24, fontWeight: 500, marginTop: 14, color: "var(--cg-primary)", letterSpacing: "-0.02em", lineHeight: 1.14, maxWidth: 440, position: "relative" }}>A top-10 global logistics company is actively engaged</div>
-            <p style={{ margin: "12px 0 0", fontSize: 12.5, color: "var(--cg-dark)", lineHeight: 1.55, maxWidth: 470, position: "relative" }}>
-              Three meetings held, MVP demoed to their security team, v2 shipped on their feedback. Their internal champion has offered to sign an LOI. They have offered to refer us to a second major logistics firm, giving us a warm path to a second enterprise account pre-raise.
-            </p>
-            <div style={{ display: "flex", flexWrap: "wrap", gap: 8, marginTop: 16, position: "relative" }}>
+            <div style={{ fontSize: 20, fontWeight: 500, marginTop: 14, color: "var(--cg-primary)", letterSpacing: "-0.02em", lineHeight: 1.2, maxWidth: 380, position: "relative" }}>A top-10 global logistics company is actively engaged</div>
+            <div style={{ display: "flex", flexWrap: "wrap", gap: 8, marginTop: 18, position: "relative" }}>
               {["3 meetings held", "MVP demoed", "v2 shipped", "LOI offered", "Warm referral"].map((c, i) => (
                 <span key={i} style={{ fontSize: 11, fontWeight: 500, color: "var(--cg-sage)", background: "rgba(255,255,255,0.7)", border: "1px solid var(--cg-sage)", borderRadius: "var(--radius-pill)", padding: "5px 11px", whiteSpace: "nowrap" }}>{c}</span>
               ))}
             </div>
           </div>
 
-          {/* problem evidence, single column */}
-          <div className="cg-anim cg-anim-4">
+          {/* problem evidence */}
+          <div className="cg-anim cg-anim-5" style={{ display: "flex", flexDirection: "column" }}>
             <div style={{ fontSize: 11, fontWeight: 500, textTransform: "uppercase", letterSpacing: "0.1em", color: "var(--cg-sage)" }}>Problem evidence</div>
-            <div style={{ display: "flex", flexDirection: "column", gap: 9, marginTop: 14 }}>
+            <div style={{ display: "flex", flexDirection: "column", gap: 11, marginTop: 14 }}>
               {evidence.map((e, i) => (
                 <div key={i} style={{ display: "flex", gap: 11, alignItems: "flex-start", fontSize: 12, color: "var(--cg-muted)", lineHeight: 1.45 }}>
                   <span style={{ color: "var(--cg-sage)", flexShrink: 0, marginTop: 1, display: "inline-flex" }}><CGIcon d={CGIc.check} size={15} /></span>{e}
                 </div>
               ))}
             </div>
-          </div>
-        </div>
-
-        {/* milestones roadmap */}
-        <div className="cg-anim cg-anim-5" style={{ marginTop: 28, paddingBottom: 4 }}>
-          <div style={{ fontSize: 11, fontWeight: 500, textTransform: "uppercase", letterSpacing: "0.1em", color: "var(--cg-sage)", marginBottom: 22 }}>Near-term milestones</div>
-          <div style={{ display: "flex", gap: 12 }}>
-            <Milestone n="01" text="Begin cold outreach to CEE freight forwarders: offer free blacklist exchange to seed the shared database" />
-            <Milestone n="02" text="Sign LOI with enterprise anchor" />
-            <Milestone n="03" text="Meet second major logistics firm via warm referral" />
-            <Milestone n="04" text="Reach ~4,000 shared list entries: threshold for converting to paid access" />
-            <Milestone n="05" text="First paid pilot of carrier verification tool" last accent />
           </div>
         </div>
       </div>

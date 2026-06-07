@@ -41,7 +41,7 @@ function Slide05() {
           </div>
           <div className="cg-anim cg-anim-5" style={{ flex: 1, display: "flex", flexDirection: "column", justifyContent: "center", borderTop: "1px solid var(--cg-border)" }}>
             <Force idx="03" title="The infrastructure to build this is finally within reach"
-              body="EU registries have opened API access, making cross-border data aggregation buildable by a small team. AI now enables ownership graph analysis and fraud pattern detection in seconds."
+              body="AI now enables ownership graph analysis and fraud pattern detection in seconds. EU registries have opened API access, making cross-border data aggregation buildable by a small team."
               metric="In seconds" metricSub="ownership graph + pattern AI" tone="sage" />
           </div>
         </div>
@@ -111,10 +111,7 @@ function Slide06() {
           </div>
         </div>
       </div>
-      <div className="cg-foot">
-        <span style={{ textTransform: "none", letterSpacing: 0, color: "var(--cg-muted)", fontSize: 12.5 }}>Full market size methodology in appendix.</span>
-        <span style={{ fontVariantNumeric: "tabular-nums" }}>07</span>
-      </div>
+      <CGFoot page="07" label="Market size" />
     </div>
   );
 }
@@ -322,14 +319,14 @@ function Slide09() {
           US companies prove the demand. No meaningful European competitor exists yet.
         </h1>
 
-        <div style={{ flex: 1, display: "flex", flexDirection: "column", justifyContent: "space-evenly", paddingBottom: 10 }}>
+        <div style={{ flex: 1, display: "flex", flexDirection: "column", gap: 20, paddingBottom: 10 }}>
         <div className="cg-anim cg-anim-3" style={{ display: "flex", gap: 18, alignItems: "stretch" }}>
           <CompCard role="Proof of demand" roleTone="verified" names="Highway, Descartes, CarrierMonitor"
             icon={CGIc.trend} iconColor="var(--cg-sage)" accentBorder="var(--cg-sage)"
             body="Over $100M raised, serving thousands of US brokers. Built on FMCSA/USDOT data that does not exist in Europe. GDPR-incompatible. Not a threat here, but a clear signal the market is real." />
           <CompCard role="Key EU competitor" roleTone="neutral" names="TrustedCarrier"
             icon={CGIc.shield} iconColor="var(--cg-muted)"
-            body="German, state-backed. Carriers self-enrol and pay for their own profile. No cross-company fraud network, no pattern-based signals. A whitelist, not an intelligence layer." />
+            body="German, state-backed carrier trust tool. Carriers self-enrol and pay for their own profile — a well-structured whitelist, but not a cross-company fraud intelligence layer." />
           <CompCard role="Substitutes" roleTone="review" names="Manual checks and informal blacklists"
             icon={CGIc.clipboard} iconColor="var(--cg-caution)"
             body="Security managers maintain hand-built blacklists, share intel informally, and cross-check registries under time pressure. Fast to fool, impossible to scale." />

@@ -282,7 +282,7 @@ function Slide04() {
               </div>
               <div style={{ textAlign: "center" }}>
                 <div className="cg-fig" style={{ fontSize: 46, color: "var(--cg-caution)" }}>100<span style={{ fontSize: 18, color: "var(--cg-very-muted)" }}>/100</span></div>
-                <div style={{ fontSize: 10, textTransform: "uppercase", letterSpacing: "0.08em", color: "var(--cg-very-muted)", marginTop: 2 }}>Risk score</div>
+                <div style={{ fontSize: 10, textTransform: "uppercase", letterSpacing: "0.08em", color: "var(--cg-very-muted)", marginTop: 2 }}>AI risk score</div>
               </div>
             </div>
 
@@ -299,8 +299,8 @@ function Slide04() {
           </div>
 
           {/* annotation callouts */}
-          <Callout className="cg-anim cg-anim-4" style={{ left: 8, top: 40 }}>Instant risk score and verdict</Callout>
-          <Callout className="cg-anim cg-anim-5" style={{ left: 8, top: 250 }}>Shared network flags</Callout>
+          <Callout className="cg-anim cg-anim-4" style={{ left: 8, top: 40 }}>AI-powered risk score and verdict</Callout>
+          <Callout className="cg-anim cg-anim-5" style={{ left: 8, top: 250 }}>AI-detected network flags</Callout>
           <Callout className="cg-anim cg-anim-6" style={{ right: 8, top: 360 }}>Severity grading per signal</Callout>
         </div>
       </div>
