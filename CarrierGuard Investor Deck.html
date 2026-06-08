@@ -854,22 +854,19 @@ function Slide10() {
 }
 
 /* ============================================================ SLIDE 11 TEAM */
-function Person({ slotId, name, role, tags, bullets }) {
+function Person({ name, role, tags, bullets }) {
   return (
-    <div style={{ flex: 1, background: "var(--cg-white)", border: "1px solid var(--cg-border)", borderRadius: "var(--radius-xl)", padding: "26px 26px", display: "flex", flexDirection: "column" }}>
-      <image-slot id={slotId} shape="circle" placeholder="Drop photo"
-        style={{ width: "104px", height: "104px", display: "block", margin: "0 auto" }}></image-slot>
-      <div style={{ textAlign: "center", marginTop: 16 }}>
-        <div style={{ fontSize: 19, fontWeight: 500, letterSpacing: "-0.01em" }}>{name}</div>
-        <div style={{ fontSize: 12, fontWeight: 500, textTransform: "uppercase", letterSpacing: "0.08em", color: "var(--cg-sage)", marginTop: 6 }}>{role}</div>
+    <div style={{ flex: 1, background: "var(--cg-white)", border: "1px solid var(--cg-border)", borderRadius: "var(--radius-xl)", padding: "24px 24px 22px", display: "flex", flexDirection: "column" }}>
+      <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 16 }}>
+        <div style={{ fontSize: 20, fontWeight: 500, letterSpacing: "-0.015em" }}>{name}</div>
+        <div style={{ flexShrink: 0, fontSize: 11, fontWeight: 500, textTransform: "uppercase", letterSpacing: "0.08em", color: "var(--cg-sage)", background: "var(--cg-sage-light)", borderRadius: "var(--radius-pill)", padding: "6px 9px" }}>{role}</div>
       </div>
-      <div style={{ fontSize: 11.5, color: "var(--cg-muted)", textAlign: "center", marginTop: 10, lineHeight: 1.5, textWrap: "balance" }}>{tags}</div>
-      <hr className="cg-rule" style={{ margin: "18px 0" }} />
-      <div style={{ display: "flex", flexDirection: "column", gap: 11 }}>
+      <div style={{ fontSize: 11.5, color: "var(--cg-muted)", marginTop: 12, lineHeight: 1.5 }}>{tags}</div>
+      <hr className="cg-rule" style={{ margin: "16px 0" }} />
+      <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
         {bullets.map((b, i) => (
-          <div key={i} style={{ display: "flex", gap: 10, alignItems: "flex-start", fontSize: 12.5, color: b.muted ? "var(--cg-very-muted)" : "var(--cg-primary)", lineHeight: 1.45, fontStyle: b.muted ? "italic" : "normal" }}>
-            {!b.muted && <span style={{ width: 5, height: 5, borderRadius: "50%", background: "var(--cg-sage)", flexShrink: 0, marginTop: 6 }} />}
-            {b.muted && <span style={{ width: 5, height: 5, borderRadius: "50%", border: "1px solid var(--cg-very-muted)", flexShrink: 0, marginTop: 6 }} />}
+          <div key={i} style={{ display: "flex", gap: 10, alignItems: "flex-start", fontSize: 12.25, color: "var(--cg-primary)", lineHeight: 1.45 }}>
+            <span style={{ width: 5, height: 5, borderRadius: "50%", background: "var(--cg-sage)", flexShrink: 0, marginTop: 6 }} />
             <span>{b.t}</span>
           </div>
         ))}
@@ -886,7 +883,7 @@ function Slide11() {
           Built by people who know this problem firsthand
         </h1>
         <div className="cg-anim cg-anim-3" style={{ display: "flex", gap: 20, flex: 1, paddingBottom: 78 }}>
-          <Person slotId="team-zosia" name="Zofia Krajewska" role="CEO"
+          <Person name="Zofia Krajewska" role="CEO"
             tags="Commercial strategy · GTM · fundraising · investor relations"
             bullets={[
               { t: "Built £0 to £80K revenue in three months at Clerkenwell Health" },
@@ -894,13 +891,14 @@ function Slide11() {
               { t: "Strategy and Operations at ADC, a 150-person AI consultancy" },
               { t: "Family roots in European freight logistics, the direct source of our enterprise access" },
             ]} />
-          <Person slotId="team-alek" name="Aleksander Jędrosz" role="CTO"
+          <Person name="Aleksander Jędrosz" role="CTO"
             tags="Technical architecture · fraud-detection intelligence · data pipelines · carrier and TMS integrations"
             bullets={[
               { t: "Engineering Team Lead at Snowflake Poland, building large-scale data infrastructure serving 100,000+ DAU" },
-              { t: "Additional accomplishments to be added", muted: true },
+              { t: "Led teams delivering enterprise-grade data pipelines and agentic AI systems on $2–4M engagements turned around in months – productionizing AI inside large enterprises." },
+              { t: "Earlier: AI/ML at deepsense.ai and research at Applica – nearly a decade in applied ML and enterprise data." },
             ]} />
-          <Person slotId="team-rafal" name="Rafał Krajewski" role="Advisor"
+          <Person name="Rafał Krajewski" role="Advisor"
             tags="Logistics industry insider · enterprise access · domain knowledge"
             bullets={[
               { t: "Decades at C-level inside European freight, with operator-level credibility in a relationship-driven industry" },
